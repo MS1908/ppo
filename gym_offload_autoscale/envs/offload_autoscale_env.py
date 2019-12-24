@@ -171,7 +171,7 @@ class OffloadAutoscaleEnv(gym.Env):
         # d_op, d_com, d, number_of_server, local_workload = self.power_model(action)
         # print('\t{:20}{:20}{:20}{:20}{:10}'.format('d_op','d_com','d','number_server','local_workload'))
         # print('\t{:<20.3f}{:<20.3f}{:<20.3f}{:<20.3f}{:<10.3f}'.format(d_op, d_com, d, number_of_server, local_workload))
-        reward = self.reward_func(g_t, d_op, d, number_of_server, local_workload)
+        reward = 1 / self.reward_func(g_t, d_op, d, number_of_server, local_workload)
         lambda_t = self.get_lambda()
         b_t = self.get_b(state, g_t, d_op, d) 
         h_t = self.get_h()
