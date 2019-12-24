@@ -15,7 +15,7 @@ model.learn(total_timesteps=10000)
 
 observation = env.reset()
 t = 0
-for i in range(1000):
+for i in range(10000):
     action, _states = model.predict(observation)
     print("Action ", action)
     observation, reward, done, info = env.step(action)

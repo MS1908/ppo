@@ -53,7 +53,7 @@ class OffloadAutoscaleEnv(gym.Env):
         return np.random.uniform(self.lamda_low, self.lamda_high)
     def get_b(self, state, g, d_op, d):
         b = state[1]
-        # print('\t', end ='')
+        # print('\t', end = '')
         if d_op > b:
             # print('unused batery')
             return b + g
@@ -153,9 +153,7 @@ class OffloadAutoscaleEnv(gym.Env):
 
     def step(self, action):
         done = False
-        # action = self.get_action(float(action))
         action = float(action)
-        self.time_step += 1
         self.get_time()
         state = self.state
         # print('\tstate: ',state)
@@ -179,17 +177,17 @@ class OffloadAutoscaleEnv(gym.Env):
         self.state = np.array([lambda_t, b_t, h_t, e_t])
         # print('\tnew state: ', self.state)
         # print('\tcost: ', reward)
-        if self.time_step == 1000:
+        if b_t == 0:
             done = True
-        return self.state, reward, done, {}
+        return self.state, 1 / reward, done, {}
 
     def reset(self):
         self.state = np.array([self.lamda_low, self.b_low, self.h_low, self.e_low])
-        self.time_step = 0
         self.time = 0
         return self.state
 
-MyEnv = OffloadAutoscaleEnv()
-MyEnv.reset()
-for i in range(100):
-    state, reward, done, info = MyEnv.step(0.01 * i)
+# MyEnv = OffloadAutoscaleEnv()
+# MyEnv.reset()
+# for i in range(100):
+#     # print('STEP: ', i)
+#     state, reward, done, info = MyEnv.step(0.01 * i)
