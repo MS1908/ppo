@@ -1,6 +1,7 @@
 import gym
 import gym_offload_autoscale
 
+
 env = gym.make('offload-autoscale-v0')
 env = DummyVecEnv([lambda: env])
 

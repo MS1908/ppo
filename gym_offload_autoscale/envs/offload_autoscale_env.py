@@ -3,7 +3,6 @@ import math
 import numpy as np
 from gym import error, spaces, utils
 from gym.utils import seeding
-from scipy.optimize import minimize
 
 class OffloadAutoscaleEnv(gym.Env):
     # metadata = {'render.modes': ['human']}
@@ -11,17 +10,15 @@ class OffloadAutoscaleEnv(gym.Env):
         self.timeslot = 0.25  # hours, ~15min
         self.batery_capacity = 2000  # kWh
         self.server_service_rate = 20  # units/sec
-        self.server_power_consumption = 150
 
-        self.lamda_high = 1  # units/second
-        self.lamda_low = 1
+        self.lamda_high = 100  # units/second
+        self.lamda_low = 10
         self.b_high = self.batery_capacity / self.timeslot  # W
         self.b_low = 0
+        self.h_high = 0.60  # ms/unit
+        self.h_low = 0.20
         self.e_low = 0
-        self.h_high = 1  # ms/unit
-        self.h_low = 0
-        self.e_high = 1
-
+        self.e_high = 2
         self.back_up_cost_coef = 0.15
         self.normalized_unit_depreciation_cost = 0.01
         self.max_number_of_server = 10
@@ -29,96 +26,34 @@ class OffloadAutoscaleEnv(gym.Env):
         # power model
         self.d_sta = 300
         self.coef_dyn = 10
-        # self.b_com = 10
-
-        self.time_step = 0
+        self.server_power_consumption = 150
+        self.b_com = 10
 
         r_high = np.array([
             self.lamda_high,
             self.b_high,
             self.h_high,
-            self.e_low])
+            self.e_high])
         r_low = np.array([
             self.lamda_low,
             self.b_low,
             self.h_low,
-            self.e_high])
+            self.e_low])
         self.observation_space = spaces.Box(low=r_low, high=r_high)
-        self.action_space = spaces.Box(low=0.0, high=self.b_high, shape=(1,), dtype=np.float32)
+        self.action_space = spaces.Box(low=0.0, high=1.0, shape=(1,), dtype=np.float32)
         self.state = [0, 0, 0, 0]
-
-        # self.state.append(np.array(obs[1]))
         self.time = 0
-        self.episode = 0
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
-    def get_e(self):
-        if self.time >= 9 and self.time < 15:
-            return 1
-        if self.time < 6 or self.time >= 18:
-            return 0
-        return 1
-
-    def get_g(self, e):
-        e = int(e)
-        if e == 0:
-            return np.random.exponential(60)
-        if e == 1:
-            return np.random.normal(520, 130)
-        return np.random.normal(800, 95)
-
+    # Transition functions
     def get_lambda(self):
         return np.random.uniform(self.lamda_low, self.lamda_high)
-
-    def get_h(self):
-        return np.random.uniform(self.h_low, self.h_high)
-
-    def get_time(self):
-        self.time += 0.25
-        if self.time == 24:
-            self.time = 0
-
-    def cal(self, action):
-        opt_val = math.inf
-        ans = [0, 0]
-        ok = False
-        done = False
-        for number_of_server in range(1, self.max_number_of_server + 1):
-            # coeff = [1, 1, 1 + self.server_power_consumption * number_of_server - action]
-            # if action < 150 * number_of_server + 1:
-            #     return [0, 0]
-            # local_workload = np.log(action - 150 * number_of_server)
-            if action < 150 * number_of_server:
-                return [0, 0]
-            local_workload = (action - 150 * number_of_server) / 10
-            if not isinstance(local_workload, complex):
-                cost_delay_local = local_workload / (number_of_server * self.server_service_rate - local_workload)
-                cost_delay_cloud = (self.state[0] - local_workload) * self.state[2]
-                # print('Cost delay ' + str(cost_delay_local + cost_delay_cloud))
-                if opt_val > cost_delay_local + cost_delay_cloud:
-                    ans = [number_of_server, local_workload]
-                    opt_val = cost_delay_local + cost_delay_cloud
-        if ok:
-            return ans, done
-        else:
-            done = True
-            return [0, 0], done
-    
-    def power_model(self, action):
-        d_dyn = self.coef_dyn * self.state[0]
-        d_op = d_dyn + self.d_sta
-        params = [0, 0]
-        params, done = self.cal(action) 
-        number_of_server = params[0]
-        local_workload = params[1]
-        d_com = action
-        return d_op, d_com, d_op + d_com, number_of_server, local_workload, done
-
-    def get_b(self, state, action, g, d_op, d):
+    def get_b(self, state, g, d_op, d):
         b = state[1]
+        # print('\t', end ='')
         if d_op > b:
             # print('unused batery')
             return b + g
@@ -129,18 +64,79 @@ class OffloadAutoscaleEnv(gym.Env):
             else:
                 # print('discharge batery')
                 return b + g - d
-    # constraints for delay local function
+    def get_h(self):
+        return np.random.uniform(self.h_low, self.h_high)
+    def get_e(self):
+        if self.time >= 9 and self.time < 15:
+            return 2
+        if self.time < 6 or self.time >= 18:
+            return 0
+        return 1
 
-    def reward_func(self, action, g, d_op, d, number_of_server, local_workload):
-        b = self.state[1]
-        act = [number_of_server, local_workload]
-        if act == [0, 0]:
-            cost_delay_local = 0
+
+    def get_time(self):
+        self.time += 0.25
+        if self.time == 24:
+            self.time = 0
+    def get_g(self, e):
+        if e == 0:
+            return np.random.exponential(60)
+        if e == 1:
+            return np.random.normal(520, 130)
+        return np.random.normal(800, 95)
+
+    def check_constraints(self, m, mu, lamda):
+        if mu > lamda or mu < 0: return False
+        if isinstance(mu, complex): return False
+        if m * self.server_service_rate <= mu: return False
+        return True
+    def cost_delay_local_function(self, m, mu):
+        if m == 0 and mu == 0: return 0
+        return mu / (m * self.server_service_rate - mu)
+    def cost_delay_cloud_function(self, mu, h, lamda):
+        return (lamda - mu) * h 
+    def cost_function(self, m, mu, h, lamda):
+        return self.cost_delay_local_function(m, mu) + self.cost_delay_cloud_function(mu, h, lamda)
+    def  get_m_mu(self, de_action):
+        lamd, _, h, _ = self.state
+        opt_val = math.inf
+        ans = [-1, -1]
+        for m in range(1, self.max_number_of_server + 1):
+            normalized_min_cov = self.lamda_low
+            # coeff = [1, 1, (self.server_power_consumption * m - de_action) / self.server_power_consumption *  normalized_min_cov]
+            # roots = np.roots(coeff)
+            # for i in range(2):
+            # mu = roots[i]
+            mu = (de_action - self.server_power_consumption * m) * normalized_min_cov / self.server_power_consumption
+            valid = self.check_constraints(m, mu, lamd)
+            if valid:
+                if self.cost_function(m, mu, h, lamd) < opt_val:
+                    ans = [m, mu]
+                    opt_val = self.cost_function(m, mu, h, lamd)
+        return ans
+    # power
+    def get_dop(self):
+        return self.d_sta + self.coef_dyn * self.state[0]
+    def get_dcom(self, m, mu):
+        normalized_min_cov = self.lamda_low
+        return self.server_power_consumption * m + self.server_power_consumption / normalized_min_cov * mu
+    
+    def cal(self, action):
+        lamda, b, h, _ = self.state
+        d_op = self.get_dop()
+        if b <= d_op + 150:
+            return [0, 0]
         else:
-            cost_delay_local = local_workload / (number_of_server * self.server_service_rate - local_workload)
-        cost_delay_cloud = (self.state[0] - local_workload) * self.state[2]
+            low_bound = 150
+            high_bound = np.minimum(b - d_op, self.get_dcom(10, lamda))
+            de_action = low_bound + action * (high_bound - low_bound)
+            # print('deaction ', de_action)
+            return self.get_m_mu(de_action)
+
+    def reward_func(self, g, d_op, d, m, mu):
+        lamda, b, h, _ = self.state
         cost_delay_wireless = 0
-        cost_delay = cost_delay_local + cost_delay_cloud + cost_delay_wireless
+        cost_delay = self.cost_function(m, mu, h, lamda) + cost_delay_wireless
         if d_op > b:
             cost_batery = 0
             cost_bak = self.back_up_cost_coef * d_op
@@ -148,63 +144,52 @@ class OffloadAutoscaleEnv(gym.Env):
             cost_batery = self.normalized_unit_depreciation_cost * np.maximum(d - g, 0)
             cost_bak = 0
         cost = cost_delay + cost_batery + cost_bak
+
+        cost_delay_local = self.cost_delay_local_function(m, mu)
+        cost_delay_cloud = self.cost_delay_cloud_function(mu, h, lamda)
+        # print('\t{:20} {:20} {:20} {:10}'.format("cost_delay_local", "cost_delay_cloud", "cost_batery", "cost_bak"))
+        # print('\t{:<20.3f} {:<20.2f} {:<20.2f} {:<10.2f}'.format(cost_delay_local, cost_delay_cloud, cost_batery, cost_bak))
         return cost
 
     def step(self, action):
         done = False
-<<<<<<< Updated upstream
+        # action = self.get_action(float(action))
         action = float(action)
-        # self.time_step += 1
-=======
-        action = self.get_action(float(action))
-        # if math.isnan(action):
-        #     done = True
-        #     self.episode += 1
-        #     reward = 1e9
-        #     return self.state, reward, done, {}
-        
         self.time_step += 1
->>>>>>> Stashed changes
         self.get_time()
         state = self.state
-        print('\tstate: ',state)
+        # print('\tstate: ',state)
         # print('\ttime: ',self.time)
         g_t = self.get_g(state[3])
         # print('\tget ', g_t)
         # print('\taction: ', action)
-        d_op, d_com, d, number_of_server, local_workload = self.power_model(action)
-        print('\t{0:10}{1:10}{2:10}{3:20}{4:10}'.format('d_op','d_com','d','number_server','local_workload'))
-        print('\t{0:<10.3f}{1:<10.3f}{2:<10.3f}{3:<20.3f}{4:<10.3f}'.format(d_op, d_com, d, number_of_server, local_workload))
-        reward = self.reward_func(action, g_t, d_op, d, number_of_server, local_workload)
+
+        d_op = self.get_dop()
+        number_of_server, local_workload = self.cal(action) 
+        d_com = self.get_dcom(number_of_server, local_workload)
+        d = d_op + d_com
+        # d_op, d_com, d, number_of_server, local_workload = self.power_model(action)
+        # print('\t{:20}{:20}{:20}{:20}{:10}'.format('d_op','d_com','d','number_server','local_workload'))
+        # print('\t{:<20.3f}{:<20.3f}{:<20.3f}{:<20.3f}{:<10.3f}'.format(d_op, d_com, d, number_of_server, local_workload))
+        reward = self.reward_func(g_t, d_op, d, number_of_server, local_workload)
         lambda_t = self.get_lambda()
-        b_t = self.get_b(state, action, g_t, d_op, d)
+        b_t = self.get_b(state, g_t, d_op, d) 
         h_t = self.get_h()
         e_t = self.get_e()
         self.state = np.array([lambda_t, b_t, h_t, e_t])
-        print('\tnew state: ', self.state)
-        print('\treward: ', reward)
-        if b_t < 0:
+        # print('\tnew state: ', self.state)
+        # print('\tcost: ', reward)
+        if self.time_step == 1000:
             done = True
-            reward = 1e18
-            self.episode += 1
         return self.state, reward, done, {}
 
     def reset(self):
         self.state = np.array([self.lamda_low, self.b_low, self.h_low, self.e_low])
         self.time_step = 0
         self.time = 0
+        return self.state
 
-if __name__ == '__main__':
-    MyEnv = OffloadAutoscaleEnv()
-    MyEnv.reset()
-    # # obs = MyEnv.observation_space.sample()
-    # # print('debug: ', obs)
-    # # print(MyEnv.observation_space.sample())
-    for i in range(1000):
-        action = MyEnv.action_space.sample()
-        state, reward, _, _ = MyEnv.step(action)
-    #     print('STEP: ', i)
-    #     state, reward = MyEnv.step(i+3000)
-    #     # state, reward = MyEnv.step(MyEnv.state[1])
-    #     # print(state)
-    #     # print(reward)
+MyEnv = OffloadAutoscaleEnv()
+MyEnv.reset()
+for i in range(100):
+    state, reward, done, info = MyEnv.step(0.01 * i)
