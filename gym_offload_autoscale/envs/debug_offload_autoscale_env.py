@@ -185,9 +185,9 @@ class OffloadAutoscaleEnv(gym.Env):
         self.time = 0
         return self.state
 
-# MyEnv = OffloadAutoscaleEnv()
-# MyEnv.reset()
-# for i in range(10000):
-#     # print('STEP: ', i)
-#     state, reward, done, info = MyEnv.step(MyEnv.action_space.sample())
-#     if done: print(i, 'done')
+MyEnv = OffloadAutoscaleEnv()
+MyEnv.reset()
+for i in range(10000):
+    # print('STEP: ', i)
+    state, reward, done, info = MyEnv.step(MyEnv.action_space.sample())
+    if done: print(i, 'done')

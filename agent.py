@@ -13,7 +13,7 @@ env = gym.make('offload-autoscale-v0')
 env = DummyVecEnv([lambda: env])
 
 model = PPO2(MlpPolicy, env, verbose=1)
-model.learn(total_timesteps=1000)
+model.learn(total_timesteps=100000)
 
 rewards_list = []
 avg_rewards = []
@@ -29,7 +29,7 @@ for i in range(10000):
     t += 1
     # env.render()
 import matplotlib.pyplot as plt
-df=pd.DataFrame({'x': range(10000), 'y1': rewards_list, 'y2': avg_rewards})
+df=pd.DataFrame({'x': range(1000), 'y1': rewards_list, 'y2': avg_rewards})
 
 plt.plot( 'x', 'y1', data=df, marker='', color='skyblue', linewidth=1, label="reward")
 plt.plot( 'x', 'y2', data=df, marker='', color='olive', linewidth=1, label="average_rewards")
