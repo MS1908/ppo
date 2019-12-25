@@ -159,15 +159,15 @@ class OffloadAutoscaleDiscreteEnv(gym.Env):
         # self.time_step += 1
         self.get_time()
         state = self.state
-        print('\tstate: ',state)
+        # print('\tstate: ',state)
         # print('\ttime: ',self.time)
         g_t = self.get_g(state[3])
-        print('\tget ', g_t)
-        print('\taction: ', action)
+        # print('\tget ', g_t)
+        # print('\taction: ', action)
         d_op, d_com, d, number_of_server, local_workload, done = self.power_model(action)
-        print('\t{0:10}{1:10}{2:10}{3:20}{4:10}'.format('d_op','d_com','d','number_server','local_workload'))
-        print('\t{0:<10.3f}{1:<10.3f}{2:<10.3f}{3:<20.3f}{4:<10.3f}'.format(d_op, d_com, d, number_of_server, local_workload))
-        reward = self.reward_func(action, g_t, d_op, d, number_of_server, local_workload)
+        # print('\t{0:10}{1:10}{2:10}{3:20}{4:10}'.format('d_op','d_com','d','number_server','local_workload'))
+        # print('\t{0:<10.3f}{1:<10.3f}{2:<10.3f}{3:<20.3f}{4:<10.3f}'.format(d_op, d_com, d, number_of_server, local_workload))
+        reward = 1 / self.reward_func(action, g_t, d_op, d, number_of_server, local_workload)
         cost_delay_local = self.cost_delay_local_function(number_of_server, local_workload)
         cost_delay_cloud = self.cost_delay_cloud_function(local_workload, state[2], state[0])
         lambda_t = self.get_lambda()
@@ -175,9 +175,9 @@ class OffloadAutoscaleDiscreteEnv(gym.Env):
         h_t = self.get_h()
         e_t = self.get_e()
         self.state = np.array([lambda_t, b_t, h_t, e_t])
-        print('\tnew state: ', self.state)
-        print('\treward: ', reward)
-        if b_t < 0 or (cost_delay_cloud < 0 and cost_delay_local < 0):
+        # print('\tnew state: ', self.state)
+        # print('\treward: ', reward)
+        if b_t < 0 or (cost_delay_cloud < 0 and cost_delay_local < 0) or reward < 0:
             done = True
             reward = 1e18
             self.episode += 1
