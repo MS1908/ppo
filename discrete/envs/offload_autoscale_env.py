@@ -15,7 +15,7 @@ class OffloadAutoscaleDiscreteEnv(gym.Env):
 
         self.lamda_high = 100  # units/second
         self.lamda_low = 10
-        self.b_high = self.batery_capacity / self.timeslot  # W
+        self.b_high = int(self.batery_capacity / self.timeslot)  # W
         self.b_low = 0
         self.e_low = 0
         self.h_high = 60  # ms/unit
@@ -43,7 +43,7 @@ class OffloadAutoscaleDiscreteEnv(gym.Env):
             self.b_low,
             self.h_low,
             self.e_high])
-        self.observation_space = spaces.MultiDiscrete([self.lamda_high + 1, self.b_high + 1, self.h_high + 1, self.e_high + 1])
+        self.observation_space = spaces.MultiDiscrete([self.lamda_high - self.lamda_low 1, self.b_high + 1, self.h_high - self.h_low + 1, self.e_high + 1])
         self.action_space = spaces.Discrete(int(self.b_high))
         self.state = [0, 0, 0, 0]
 

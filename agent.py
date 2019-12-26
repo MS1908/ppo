@@ -25,6 +25,7 @@ for i in range(10000):
     obs, rewards, dones, info = env.step(action)
     rewards_list.append(rewards)
     avg_rewards.append(np.mean(rewards_list[:]))
+    # print("Avg rew: ", avg_rewards)
     if dones: env.reset()
     t += 1
     # env.render()

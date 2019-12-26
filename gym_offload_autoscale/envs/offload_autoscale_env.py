@@ -15,8 +15,8 @@ class OffloadAutoscaleEnv(gym.Env):
         self.lamda_low = 10
         self.b_high = self.batery_capacity / self.timeslot  # W
         self.b_low = 0
-        self.h_high = 0.60  # ms/unit
-        self.h_low = 0.20
+        self.h_high = 0.06  # ms/unit
+        self.h_low = 0.02
         self.e_low = 0
         self.e_high = 2
         self.back_up_cost_coef = 0.15
