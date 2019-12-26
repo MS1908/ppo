@@ -23,11 +23,15 @@ class OffloadAutoscaleEnv(gym.Env):
         self.normalized_unit_depreciation_cost = 0.01
         self.max_number_of_server = 10
 
+
         # power model
         self.d_sta = 300
         self.coef_dyn = 10
         self.server_power_consumption = 150
         self.b_com = 10
+
+        self.time_steps_per_episode = 100
+        self.episode = 0
 
         r_high = np.array([
             self.lamda_high,
@@ -43,6 +47,7 @@ class OffloadAutoscaleEnv(gym.Env):
         self.action_space = spaces.Box(low=0.0, high=1.0, shape=(1,), dtype=np.float32)
         self.state = [0, 0, 0, 0]
         self.time = 0
+        self.time_step = 0
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -156,6 +161,8 @@ class OffloadAutoscaleEnv(gym.Env):
         action = float(action)
         self.get_time()
         state = self.state
+        # print('time_step: ', self.time_step)
+        self.time_step += 1
         # print('\tstate: ',state)
         # print('\ttime: ',self.time)
         g_t = self.get_g(state[3])
@@ -176,18 +183,21 @@ class OffloadAutoscaleEnv(gym.Env):
         self.state = np.array([lambda_t, b_t, h_t, e_t])
         # print('\tnew state: ', self.state)
         # print('\tcost: ', reward)
-        if b_t <= 0:
+        if  self.time_step >= self.time_steps_per_episode:
             done = True
+            self.episode += 1
         return self.state, 1 / reward, done, {}
 
     def reset(self):
         self.state = np.array([self.lamda_low, self.b_low, self.h_low, self.e_low])
         self.time = 0
+        self.time_step = 0
         return self.state
 
 # MyEnv = OffloadAutoscaleEnv()
 # MyEnv.reset()
-# for i in range(10000):
+# for i in range(100000):
 #     # print('STEP: ', i)
 #     state, reward, done, info = MyEnv.step(MyEnv.action_space.sample())
-#     if done: print(i, 'done')
+#     if done: MyEnv.reset()
+# print(MyEnv.episode)
