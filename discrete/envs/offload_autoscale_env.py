@@ -198,7 +198,7 @@ class OffloadAutoscaleDiscreteEnv(gym.Env):
             done = True
             reward = 1e18
             self.episode += 1
-        return self.state, reward, done, {}
+        return self.state, 1 / reward, done, {}
 
     def reset(self):
         self.state = np.array([0, 0, 0, 0])
