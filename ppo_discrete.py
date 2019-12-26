@@ -23,7 +23,7 @@ for i in range(10000):
     action, _states = model.predict(obs)
     # action = np.random.uniform(0, 1, 1)
     obs, rewards, dones, info = env.step(action)
-    rewards_list.append(rewards)
+    rewards_list.append(1 / rewards)
     avg_rewards.append(np.mean(rewards_list[:]))
     if dones: env.reset()
     t += 1
