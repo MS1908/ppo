@@ -205,12 +205,13 @@ class OffloadAutoscaleDiscreteEnv(gym.Env):
         self.get_time()
         state = self.state
         print('\tstate: ',state)
+        state = self.de_state(state)
+        print('\tde_state: ',state)
         print('\ttime: ',self.time)
         g_t = self.get_g(state[3])
         print('\tget ', g_t)
         print('\taction: ', action)
-        state = self.de_state(state)
-        print('\tde_state: ',state)
+        
 
         d_op = self.get_dop(state)
         number_of_server, local_workload = self.cal(action, state) 
@@ -230,132 +231,6 @@ class OffloadAutoscaleDiscreteEnv(gym.Env):
         if b_t <= 0:
             done = True
         return self.state, 1 / reward, done, {}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # def cal(self, action):
-    #     # opt_val = math.inf
-    #     # ans = [0, 0]
-    #     # ok = False
-    #     # done = False
-    #     for number_of_server in range(1, self.max_number_of_server + 1):
-    #         local_workload = (action - number_of_server * self.server_power_consumption) / self.k
-    #         if local < 0 or local_workload > self.
-    #     #     coeff = [1, 1, 1 + self.server_power_consumption * number_of_server - action]
-    #     #     local_workload = np.roots(coeff)[1]
-    #     #     if isinstance(local_workload, complex):
-    #     #         continue
-    #     #     else:
-    #     #         ok = True
-    #     #         cost_delay_local = local_workload / (number_of_server * self.server_service_rate - local_workload)
-    #     #         cost_delay_cloud = (self.state[0] - local_workload) * self.state[2]
-    #     #         # print('Cost delay ' + str(cost_delay_local + cost_delay_cloud))
-    #     #         if opt_val > cost_delay_local + cost_delay_cloud:
-    #     #             ans = [number_of_server, local_workload]
-    #     #             opt_val = cost_delay_local + cost_delay_cloud
-    #     # if ok:
-    #     #     return ans, done
-    #     # else:
-    #     #     done = True
-    #     #     return [0, 0], done
-
-    #     # number_of_server = action -
-    
-    # def power_model(self, action, de_state):
-    #     d_dyn = self.coef_dyn * de_state[0]
-    #     d_op = d_dyn + self.d_sta
-    #     # params = [0, 0]
-    #     params, done = self.cal(action) 
-    #     number_of_server, local_workload = params
-    #     # local_workload = params[1]
-    #     d_com = action
-    #     return d_op, d_com, d_op + d_com, number_of_server, local_workload, done
-
-    # def get_b(self, state, action, g, d_op, d):
-    #     b = state[1]
-    #     if d_op > b:
-    #         # print('unused batery')
-    #         return b + g
-    #     else:
-    #         if g >= d:
-    #             # print('recharge batery')
-    #             return np.maximum(self.b_high, b + g - d)
-    #         else:
-    #             # print('discharge batery')
-    #             return b + g - d
-    # # constraints for delay local function
-
-    # def cost_delay_local_function(self, m, mu):
-    #     if m == 0 and mu == 0: return 0
-    #     return mu / (m * self.server_service_rate - mu)
-    # def cost_delay_cloud_function(self, mu, h, lamda):
-    #     return (lamda - mu) * h 
-
-    # def reward_func(self, action, g, d_op, d, number_of_server, local_workload, de_state):
-    #     lamda, b = de_state[1]
-    #     act = [number_of_server, local_workload]
-    #     if act == [0, 0]:
-    #         cost_delay_local = 0
-    #     else:
-    #         cost_delay_local = local_workload / (number_of_server * self.server_service_rate - local_workload)
-    #     cost_delay_cloud = (self.state[0] - local_workload) * self.state[2]
-    #     cost_delay_wireless = 0
-    #     cost_delay = cost_delay_local + cost_delay_cloud + cost_delay_wireless
-    #     if d_op > b:
-    #         cost_batery = 0
-    #         cost_bak = self.back_up_cost_coef * d_op
-    #     else:
-    #         cost_batery = self.normalized_unit_depreciation_cost * np.maximum(d - g, 0)
-    #         cost_bak = 0
-    #     cost = cost_delay + cost_batery + cost_bak
-    #     return cost
-
-    # def step(self, action):
-    #     done = False
-    #     # self.time_step += 1
-    #     self.get_time()
-    #     state = self.state
-    #     print('\ttime: ',self.time)
-    #     print('\tstate: ',state)
-    #     de_state = self.de_state(state)
-    #     print('\tde_state: ',state)
-    #     g_t = self.get_g(state[3])
-    #     print('\tget ', g_t)
-    #     print('\taction: ', action)
-    #     d_op, d_com, d, number_of_server, local_workload, done = self.power_model(action, de_state)
-    #     # print('\t{0:10}{1:10}{2:10}{3:20}{4:10}'.format('d_op','d_com','d','number_server','local_workload'))
-    #     # print('\t{0:<10.3f}{1:<10.3f}{2:<10.3f}{3:<20.3f}{4:<10.3f}'.format(d_op, d_com, d, number_of_server, local_workload))
-    #     reward = self.reward_func(action, g_t, d_op, d, number_of_server, local_workload)
-    #     cost_delay_local = self.cost_delay_local_function(number_of_server, local_workload)
-    #     cost_delay_cloud = self.cost_delay_cloud_function(local_workload, state[2], state[0])
-    #     lambda_t = self.get_lambda()
-    #     b_t = self.get_b(state, action, g_t, d_op, d)
-    #     h_t = self.get_h()
-    #     e_t = self.get_e()
-    #     self.state = np.array([lambda_t, b_t, h_t, e_t])
-    #     print('\tnew state: ', self.state)
-    #     print('\tde_new state: ', self.de_state(self.state))
-    #     print('\treward: ', reward)
-    #     if b_t < 0 or (cost_delay_cloud < 0 and cost_delay_local < 0) or reward < 0:
-    #         done = True
-    #         reward = 1e18
-    #         self.episode += 1
-    #     return self.state, reward, done, {}
 
     def reset(self):
         self.state = np.array([0, 1000, 0, 0])
