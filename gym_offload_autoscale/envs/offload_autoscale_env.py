@@ -8,25 +8,25 @@ class OffloadAutoscaleEnv(gym.Env):
     # metadata = {'render.modes': ['human']}
     def __init__(self):
         self.timeslot = 0.25  # hours, ~15min
-        self.batery_capacity = 2000  # kWh
+        self.batery_capacity = 2000  # Wh
         self.server_service_rate = 20  # units/sec
 
         self.lamda_high = 100  # units/second
         self.lamda_low = 10
         self.b_high = self.batery_capacity / self.timeslot  # W
         self.b_low = 0
-        self.h_high = 0.06  # ms/unit
+        self.h_high = 0.06  # s/unit
         self.h_low = 0.02
         self.e_low = 0
         self.e_high = 2
         self.back_up_cost_coef = 0.15
         self.normalized_unit_depreciation_cost = 0.01
-        self.max_number_of_server = 10
+        self.max_number_of_server = 15
 
 
         # power model
         self.d_sta = 300
-        self.coef_dyn = 10
+        self.coef_dyn = 0.5
         self.server_power_consumption = 150
         self.b_com = 10
 
@@ -65,7 +65,7 @@ class OffloadAutoscaleEnv(gym.Env):
         else:
             if g >= d:
                 # print('recharge batery')
-                return np.maximum(self.b_high, b + g - d)
+                return np.minimum(self.b_high, b + g - d)
             else:
                 # print('discharge batery')
                 return b + g - d
@@ -85,10 +85,13 @@ class OffloadAutoscaleEnv(gym.Env):
             self.time = 0
     def get_g(self, e):
         if e == 0:
-            return np.random.exponential(60)
+            # return np.random.exponential(60)
+            return np.random.normal(200,100)
         if e == 1:
-            return np.random.normal(520, 130)
-        return np.random.normal(800, 95)
+            # return np.random.normal(520, 130)
+            return np.random.normal(400, 100)
+        # return np.random.normal(800, 95)
+        return np.random.normal(600, 100)
 
     def check_constraints(self, m, mu, lamda):
         if mu > lamda or mu < 0: return False
@@ -189,15 +192,28 @@ class OffloadAutoscaleEnv(gym.Env):
         return self.state, 1 / reward, done, {}
 
     def reset(self):
-        self.state = np.array([self.lamda_low, self.b_low, self.h_low, self.e_low])
+        self.state = np.array([self.lamda_low, self.b_high, self.h_low, self.e_low])
         self.time = 0
         self.time_step = 0
         return self.state
+    def render(self):
+        print(self.state[1])
+        return self.state[1]
 
-# MyEnv = OffloadAutoscaleEnv()
-# MyEnv.reset()
-# for i in range(1000):
-#     print('STEP: ', i)
-#     state, reward, done, info = MyEnv.step(MyEnv.action_space.sample())
-#     if done: MyEnv.reset()
-# print(MyEnv.episode)
+MyEnv = OffloadAutoscaleEnv()
+MyEnv.reset()
+b_state = []
+for i in range(1000):
+    print('STEP: ', i)
+    state, reward, done, info = MyEnv.step(MyEnv.action_space.sample())
+    b_state.append(MyEnv.render())
+    if done: MyEnv.reset()
+import matplotlib.pyplot as plt
+import pandas as pd
+df=pd.DataFrame({'x': range(1000), 'y_1': b_state})
+ # 'y_2': avg_rewards_random, 'y_3': avg_rewards_fixed_0, 'y_4': avg_rewards_fixed_1, 'y_5': avg_rewards_fixed_2})
+plt.xlabel("Time Slot")
+plt.ylabel("Batery")
+plt.scatter( 'x', 'y_1', data=df, marker='o', color='skyblue', linewidth=1, label="b")
+plt.legend()
+plt.show()
