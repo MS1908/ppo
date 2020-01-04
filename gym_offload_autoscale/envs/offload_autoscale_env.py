@@ -30,7 +30,7 @@ class OffloadAutoscaleEnv(gym.Env):
         self.server_power_consumption = 150
         self.b_com = 10
 
-        self.time_steps_per_episode = 100
+        self.time_steps_per_episode = 96
         self.episode = 0
 
         r_high = np.array([
@@ -196,8 +196,8 @@ class OffloadAutoscaleEnv(gym.Env):
 
 # MyEnv = OffloadAutoscaleEnv()
 # MyEnv.reset()
-# for i in range(100000):
-#     # print('STEP: ', i)
+# for i in range(1000):
+#     print('STEP: ', i)
 #     state, reward, done, info = MyEnv.step(MyEnv.action_space.sample())
 #     if done: MyEnv.reset()
 # print(MyEnv.episode)
