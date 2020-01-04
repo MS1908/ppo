@@ -49,6 +49,13 @@ class OffloadAutoscaleEnv(gym.Env):
         self.time = 0
         self.time_step = 0
 
+        self.d_op = 0
+        self.d_com = 0
+        self.d = 0
+        self.m = 0
+        self.mu = 0
+        self.g_t = 0
+
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
@@ -56,19 +63,19 @@ class OffloadAutoscaleEnv(gym.Env):
     # Transition functions
     def get_lambda(self):
         return np.random.uniform(self.lamda_low, self.lamda_high)
-    def get_b(self, state, g, d_op, d):
-        b = state[1]
+    def get_b(self):
+        b = self.state[1]
         # print('\t', end = '')
-        if d_op > b:
+        if self.d_op > b:
             # print('unused batery')
-            return b + g
+            return b + self.g
         else:
-            if g >= d:
+            if self.g >= self.d:
                 # print('recharge batery')
-                return np.minimum(self.b_high, b + g - d)
+                return np.minimum(self.b_high, b + self.g - self.d)
             else:
                 # print('discharge batery')
-                return b + g - d
+                return b + self.g - self.d
     def get_h(self):
         return np.random.uniform(self.h_low, self.h_high)
     def get_e(self):
@@ -83,7 +90,8 @@ class OffloadAutoscaleEnv(gym.Env):
         self.time += 0.25
         if self.time == 24:
             self.time = 0
-    def get_g(self, e):
+    def get_g(self):
+        e = self.state[3]
         if e == 0:
             # return np.random.exponential(60)
             return np.random.normal(200,100)
@@ -93,18 +101,20 @@ class OffloadAutoscaleEnv(gym.Env):
         # return np.random.normal(800, 95)
         return np.random.normal(600, 100)
 
-    def check_constraints(self, m, mu, lamda):
-        if mu > lamda or mu < 0: return False
-        if isinstance(mu, complex): return False
-        if m * self.server_service_rate <= mu: return False
+    def check_constraints(self):
+        if self.mu > self.lamda or self.mu < 0: return False
+        if isinstance(self.mu, complex): return False
+        if self.m * self.server_service_rate <= self.mu: return False
         return True
-    def cost_delay_local_function(self, m, mu):
-        if m == 0 and mu == 0: return 0
-        return mu / (m * self.server_service_rate - mu)
-    def cost_delay_cloud_function(self, mu, h, lamda):
-        return (lamda - mu) * h 
-    def cost_function(self, m, mu, h, lamda):
-        return self.cost_delay_local_function(m, mu) + self.cost_delay_cloud_function(mu, h, lamda)
+    def cost_delay_local_function(self):
+        if self.m == 0 and self.mu == 0: return 0
+        return self.mu / (self.m * self.server_service_rate - self.mu)
+    def cost_delay_cloud_function(self):
+        lamda, _, h, _ = self.state
+        return (lamda - self.mu) * h 
+    def cost_function(self):
+        lamda, _, h, _ = self.state
+        return self.cost_delay_local_function(self.m, self.mu) + self.cost_delay_cloud_function(self.mu, self.h, lamda)
     def  get_m_mu(self, de_action):
         lamd, _, h, _ = self.state
         opt_val = math.inf
@@ -125,10 +135,11 @@ class OffloadAutoscaleEnv(gym.Env):
     # power
     def get_dop(self):
         return self.d_sta + self.coef_dyn * self.state[0]
-    def get_dcom(self, m, mu):
-        normalized_min_cov = self.lamda_low
-        return self.server_power_consumption * m + self.server_power_consumption / normalized_min_cov * mu
-    
+    def get_dcom(self):
+        # normalized_min_cov = self.lamda_low
+        # return self.server_power_consumption * m + self.server_power_consumption / normalized_min_cov * mu
+        return self.server_power_consumption * self.m
+
     def cal(self, action):
         lamda, b, h, _ = self.state
         d_op = self.get_dop()
@@ -141,20 +152,20 @@ class OffloadAutoscaleEnv(gym.Env):
             # print('deaction ', de_action)
             return self.get_m_mu(de_action)
 
-    def reward_func(self, g, d_op, d, m, mu):
+    def reward_func(self):
         lamda, b, h, _ = self.state
         cost_delay_wireless = 0
-        cost_delay = self.cost_function(m, mu, h, lamda) + cost_delay_wireless
-        if d_op > b:
+        cost_delay = self.cost_function(self.m, self.mu, h, lamda) + cost_delay_wireless
+        if self.d_op > b:
             cost_batery = 0
-            cost_bak = self.back_up_cost_coef * d_op
+            cost_bak = self.back_up_cost_coef * self.d_op
         else:
-            cost_batery = self.normalized_unit_depreciation_cost * np.maximum(d - g, 0)
+            cost_batery = self.normalized_unit_depreciation_cost * np.maximum(d - self.g, 0)
             cost_bak = 0
         cost = cost_delay + cost_batery + cost_bak
 
-        cost_delay_local = self.cost_delay_local_function(m, mu)
-        cost_delay_cloud = self.cost_delay_cloud_function(mu, h, lamda)
+        cost_delay_local = self.cost_delay_local_function(self.m, self.mu)
+        cost_delay_cloud = self.cost_delay_cloud_function(self.mu, h, lamda)
         # print('\t{:20} {:20} {:20} {:10}'.format("cost_delay_local", "cost_delay_cloud", "cost_batery", "cost_bak"))
         # print('\t{:<20.3f} {:<20.2f} {:<20.2f} {:<10.2f}'.format(cost_delay_local, cost_delay_cloud, cost_batery, cost_bak))
         return cost
@@ -168,19 +179,19 @@ class OffloadAutoscaleEnv(gym.Env):
         self.time_step += 1
         # print('\tstate: ',state)
         # print('\ttime: ',self.time)
-        g_t = self.get_g(state[3])
+        self.g_t = self.get_g()
         # print('\tget ', g_t)
         # print('\taction: ', action)
 
-        d_op = self.get_dop()
-        number_of_server, local_workload = self.cal(action) 
-        d_com = self.get_dcom(number_of_server, local_workload)
-        d = d_op + d_com
+        self.d_op = self.get_dop()
+        self.m, self.mu = self.cal(action) 
+        self.d_com = self.get_dcom()
+        self.d = self.d_op + self.d_com
         # print('\t{:20}{:20}{:20}{:20}{:10}'.format('d_op','d_com','d','number_server','local_workload'))
         # print('\t{:<20.3f}{:<20.3f}{:<20.3f}{:<20.3f}{:<10.3f}'.format(d_op, d_com, d, number_of_server, local_workload))
-        reward = self.reward_func(g_t, d_op, d, number_of_server, local_workload)
+        reward = self.reward_func()
         lambda_t = self.get_lambda()
-        b_t = self.get_b(state, g_t, d_op, d) 
+        b_t = self.get_b() 
         h_t = self.get_h()
         e_t = self.get_e()
         self.state = np.array([lambda_t, b_t, h_t, e_t])
@@ -199,13 +210,16 @@ class OffloadAutoscaleEnv(gym.Env):
     def render(self):
         print(self.state[1])
         return self.state[1]
+    def fixed_action_cal(self, fixed_action):
+        
 
 MyEnv = OffloadAutoscaleEnv()
 MyEnv.reset()
 b_state = []
 for i in range(1000):
     print('STEP: ', i)
-    state, reward, done, info = MyEnv.step(MyEnv.action_space.sample())
+    action = self.fixed_action_cal(1000)
+    state, reward, done, info = MyEnv.step(action)
     b_state.append(MyEnv.render())
     if done: MyEnv.reset()
 import matplotlib.pyplot as plt
