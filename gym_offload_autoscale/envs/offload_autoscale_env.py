@@ -54,7 +54,7 @@ class OffloadAutoscaleEnv(gym.Env):
         self.d = 0
         self.m = 0
         self.mu = 0
-        self.g_t = 0
+        self.g = 0
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -93,40 +93,39 @@ class OffloadAutoscaleEnv(gym.Env):
     def get_g(self):
         e = self.state[3]
         if e == 0:
-            # return np.random.exponential(60)
-            return np.random.normal(200,100)
+            return np.random.exponential(60) + 100
+            # return np.random.normal(200,100)
         if e == 1:
-            # return np.random.normal(520, 130)
-            return np.random.normal(400, 100)
-        # return np.random.normal(800, 95)
-        return np.random.normal(600, 100)
+            return np.random.normal(520, 130)
+            # return np.random.normal(400, 100)
+        return np.random.normal(800, 95)
+        # return np.random.normal(600, 100)
 
-    def check_constraints(self):
-        if self.mu > self.lamda or self.mu < 0: return False
+    def check_constraints(self, m, mu):
+        if mu > self.state[0] or mu < 0: return False
         if isinstance(self.mu, complex): return False
-        if self.m * self.server_service_rate <= self.mu: return False
+        if m * self.server_service_rate <= mu: return False
         return True
-    def cost_delay_local_function(self):
-        if self.m == 0 and self.mu == 0: return 0
-        return self.mu / (self.m * self.server_service_rate - self.mu)
-    def cost_delay_cloud_function(self):
-        lamda, _, h, _ = self.state
-        return (lamda - self.mu) * h 
-    def cost_function(self):
-        lamda, _, h, _ = self.state
-        return self.cost_delay_local_function(self.m, self.mu) + self.cost_delay_cloud_function(self.mu, self.h, lamda)
+    def cost_delay_local_function(self, m, mu):
+        if m == 0 and mu == 0: return 0
+        return mu / (m * self.server_service_rate - mu)
+    def cost_delay_cloud_function(self, mu, h, lamda):
+        return (lamda - mu) * h 
+    def cost_function(self, m, mu, h, lamda):
+        return self.cost_delay_local_function(m, mu) + self.cost_delay_cloud_function(mu, h, lamda)
     def  get_m_mu(self, de_action):
         lamd, _, h, _ = self.state
         opt_val = math.inf
         ans = [-1, -1]
         for m in range(1, self.max_number_of_server + 1):
-            normalized_min_cov = self.lamda_low
             # coeff = [1, 1, (self.server_power_consumption * m - de_action) / self.server_power_consumption *  normalized_min_cov]
             # roots = np.roots(coeff)
             # for i in range(2):
             # mu = roots[i]
+
+            normalized_min_cov = self.lamda_low
             mu = (de_action - self.server_power_consumption * m) * normalized_min_cov / self.server_power_consumption
-            valid = self.check_constraints(m, mu, lamd)
+            valid = self.check_constraints(m, mu)
             if valid:
                 if self.cost_function(m, mu, h, lamd) < opt_val:
                     ans = [m, mu]
@@ -135,10 +134,10 @@ class OffloadAutoscaleEnv(gym.Env):
     # power
     def get_dop(self):
         return self.d_sta + self.coef_dyn * self.state[0]
-    def get_dcom(self):
-        # normalized_min_cov = self.lamda_low
-        # return self.server_power_consumption * m + self.server_power_consumption / normalized_min_cov * mu
-        return self.server_power_consumption * self.m
+    def get_dcom(self, m, mu):
+        normalized_min_cov = self.lamda_low
+        return self.server_power_consumption * m + self.server_power_consumption / normalized_min_cov * mu
+        # return self.server_power_consumption * m
 
     def cal(self, action):
         lamda, b, h, _ = self.state
@@ -147,7 +146,7 @@ class OffloadAutoscaleEnv(gym.Env):
             return [0, 0]
         else:
             low_bound = 150
-            high_bound = np.minimum(b - d_op, self.get_dcom(10, lamda))
+            high_bound = np.minimum(b - d_op, self.get_dcom(self.max_number_of_server,lamda))
             de_action = low_bound + action * (high_bound - low_bound)
             # print('deaction ', de_action)
             return self.get_m_mu(de_action)
@@ -160,7 +159,7 @@ class OffloadAutoscaleEnv(gym.Env):
             cost_batery = 0
             cost_bak = self.back_up_cost_coef * self.d_op
         else:
-            cost_batery = self.normalized_unit_depreciation_cost * np.maximum(d - self.g, 0)
+            cost_batery = self.normalized_unit_depreciation_cost * np.maximum(self.d - self.g, 0)
             cost_bak = 0
         cost = cost_delay + cost_batery + cost_bak
 
@@ -179,13 +178,13 @@ class OffloadAutoscaleEnv(gym.Env):
         self.time_step += 1
         # print('\tstate: ',state)
         # print('\ttime: ',self.time)
-        self.g_t = self.get_g()
+        self.g = self.get_g()
         # print('\tget ', g_t)
         # print('\taction: ', action)
 
         self.d_op = self.get_dop()
         self.m, self.mu = self.cal(action) 
-        self.d_com = self.get_dcom()
+        self.d_com = self.get_dcom(self.m, self.mu)
         self.d = self.d_op + self.d_com
         # print('\t{:20}{:20}{:20}{:20}{:10}'.format('d_op','d_com','d','number_server','local_workload'))
         # print('\t{:<20.3f}{:<20.3f}{:<20.3f}{:<20.3f}{:<10.3f}'.format(d_op, d_com, d, number_of_server, local_workload))
@@ -208,26 +207,36 @@ class OffloadAutoscaleEnv(gym.Env):
         self.time_step = 0
         return self.state
     def render(self):
-        print(self.state[1])
-        return self.state[1]
+        # print('{:>5} {:>7} {:>4} {:>4} {:>7} {:>7} {:>7} {:>7} {:>4} {:>7}'.format("lamd","b", "h", "e", "g", "d_op", "d_com", "d", "m", "mu"))
+        # print('{:5.2f} {:7.2f} {:4.2f} {:4.0f} {:7.2f} {:7.2f} {:7.2f} {:7.2f} {:4} {:7.2f}'.format(self.state[0],self.state[1],self.state[2],self.state[3],self.g,self.d_op, self.d_com,self.d,self.m,self.mu))
+        return self.state[0],self.state[1],self.state[2],self.state[3],self.g,self.d_op, self.d_com,self.d,self.m,self.mu
     def fixed_action_cal(self, fixed_action):
+        pass
         
 
-MyEnv = OffloadAutoscaleEnv()
-MyEnv.reset()
-b_state = []
-for i in range(1000):
-    print('STEP: ', i)
-    action = self.fixed_action_cal(1000)
-    state, reward, done, info = MyEnv.step(action)
-    b_state.append(MyEnv.render())
-    if done: MyEnv.reset()
-import matplotlib.pyplot as plt
-import pandas as pd
-df=pd.DataFrame({'x': range(1000), 'y_1': b_state})
- # 'y_2': avg_rewards_random, 'y_3': avg_rewards_fixed_0, 'y_4': avg_rewards_fixed_1, 'y_5': avg_rewards_fixed_2})
-plt.xlabel("Time Slot")
-plt.ylabel("Batery")
-plt.scatter( 'x', 'y_1', data=df, marker='o', color='skyblue', linewidth=1, label="b")
-plt.legend()
-plt.show()
+# MyEnv = OffloadAutoscaleEnv()
+# MyEnv.reset()
+# MyEnv.render()
+# state_list = []
+# for i in range(200*4):
+#     print('STEP: ', i)
+#     # action = self.fixed_action_cal(1000)
+#     action = MyEnv.action_space.sample()
+#     state, reward, done, info = MyEnv.step(action)
+#     state_list.append(MyEnv.render()[4])
+#     if done: MyEnv.reset()
+# import matplotlib.pyplot as plt
+# import pandas as pd
+# import seaborn as sns
+# sns.set(style='ticks')
+# df=pd.DataFrame({'x': range(200*4), 'y_1': state_list})
+#  # 'y_2': avg_rewards_random, 'y_3': avg_rewards_fixed_0, 'y_4': avg_rewards_fixed_1, 'y_5': avg_rewards_fixed_2})
+# # plt.xlabel("Time Slot")
+# # # plt.ylabel("Batery")
+# # plt.ylabel("Number Servers")
+# # plt.scatter( 'x', 'y_1', data=df, marker='o', color='skyblue', linewidth=0.1, label="m")
+# plt.plot( 'x', 'y_1', data=df, marker='', color='green', linewidth=1, label="g")
+# # plt.hist(state_list,bins = 20*8)
+# # sns.kdeplot(state_list);
+# plt.legend()
+# plt.show()

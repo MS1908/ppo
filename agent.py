@@ -27,7 +27,7 @@ rewards_list_fixed_2 = []
 avg_rewards_fixed_2 = []
 obs = env.reset()
 t = 0
-for i in range(10000):
+for i in range(20000):
     action = [0.0]
     obs, rewards, dones, info = env.step(action)
     rewards_list_fixed_0.append(1 / rewards)
@@ -55,7 +55,7 @@ for i in range(10000):
 # 	avg_rewards_random.append(np.mean(rewards_list_random[:]))
 # 	if dones: env.reset()
 
-for i in range(10000):
+for i in range(20000):
     action, _states = model.predict(obs)
     obs, rewards, dones, info = env.step(action)
     rewards_list_ppo.append(1 / rewards)
@@ -64,7 +64,7 @@ for i in range(10000):
     t += 1
     # env.render()
 import matplotlib.pyplot as plt
-df=pd.DataFrame({'x': range(10000), 'y_1': avg_rewards_ppo, 'y_3': avg_rewards_fixed_0})
+df=pd.DataFrame({'x': range(20000), 'y_1': avg_rewards_ppo, 'y_3': avg_rewards_fixed_0})
  # 'y_2': avg_rewards_random, 'y_3': avg_rewards_fixed_0, 'y_4': avg_rewards_fixed_1, 'y_5': avg_rewards_fixed_2})
 plt.xlabel("Time Slot")
 plt.ylabel("Time Average Cost")
