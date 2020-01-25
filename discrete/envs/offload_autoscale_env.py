@@ -119,7 +119,9 @@ class OffloadAutoscaleDiscreteEnv(gym.Env):
         else:
             done = True
             return [0, 0], done
-    
+
+    # still use power model here, but basically the same with the implementation that removed
+    # the power model
     def power_model(self, action):
         d_dyn = self.coef_dyn * self.state[0]
         d_op = d_dyn + self.d_sta
@@ -130,7 +132,7 @@ class OffloadAutoscaleDiscreteEnv(gym.Env):
         d_com = action
         return d_op, d_com, d_op + d_com, number_of_server, local_workload, done
 
-    def get_b(self, state, action, g, d_op, d):
+    def get_b(self, state, g, d_op, d):
         b = state[1]
         if d_op > b:
             # print('unused batery')
@@ -188,7 +190,7 @@ class OffloadAutoscaleDiscreteEnv(gym.Env):
         cost_delay_local = self.cost_delay_local_function(number_of_server, local_workload)
         cost_delay_cloud = self.cost_delay_cloud_function(local_workload, state[2], state[0])
         lambda_t = self.get_lambda()
-        b_t = self.get_b(state, action, g_t, d_op, d)
+        b_t = self.get_b(state, g_t, d_op, d)
         h_t = self.get_h()
         e_t = self.get_e()
         self.state = np.array([lambda_t, b_t, h_t, e_t])
