@@ -48,31 +48,19 @@ class Solver:
                 pds_s = max(s[1] - d_op - action, 0)
             self.pds_value[pds_s] = (1 - np.pow(self.alpha, time)) * self.pds_value[pds_s] + np.pow(self.alpha, time) * self.normal_value[s]
 
-<<<<<<< HEAD
-reward_list = []
-avg_reward_list = []
-
-=======
->>>>>>> 559ed5d145afc4aa8231b9d9fd5124fa3773d0d6
 def offload_autoscale_agent():
     env = gym.make('offload-autoscale-discrete-v0')
     observation_space = env.observation_space.shape[0]
     action_space = env.action_space.n
     solver = Solver(observation_space, action_space)
-<<<<<<< HEAD
     episode = 0
     while True:
         state = env.reset()
         episode += 1
-=======
-    while True:
-        state = env.reset()
->>>>>>> 559ed5d145afc4aa8231b9d9fd5124fa3773d0d6
         terminal = False # terminal condition of algo
         while True:
             action = solver.act(state)
             state, reward, done, info = env.step(action)
-<<<<<<< HEAD
             reward_list.append(1 / reward)
             avg_reward_list.append(np.mean(reward_list[:]))
             solver.update()
@@ -92,12 +80,3 @@ df=pd.DataFrame({'x': range(10000), 'y': avg_reward_list})
 plt.xlabel("Time Slot")
 plt.ylabel("Time Average Cost")
 plt.plot( 'x', 'y', data=df, marker='', color='skyblue', linewidth=1, label="algo")
-=======
-            solver.update()
-            if done:
-                break
-        if terminal:
-            exit()
-        pass
-    pass
->>>>>>> 559ed5d145afc4aa8231b9d9fd5124fa3773d0d6
