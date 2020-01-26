@@ -1,4 +1,3 @@
-import math
 import gym
 import numpy as np
 
@@ -9,19 +8,15 @@ class Solver:
         self.zip_space = zip(observation_space, action_space)
 
         self.cost_exp = {0 for (s, a) in self.zip_space}
+        self.normal_value = {0 for s in self.observation_space}
         # the space of pds is the same with the observation space
         self.pds_value = {0 for s in self.observation_space}
-        self.normal_value = {0 for s in self.observation_space}
 
-        # Value for delta = ? and learning rate = ?
+        # parameters
+        # Value for delta = ? and learning rate = ? and alpha = ?
         self.delta = 0.9
         self.learning_rate = 0.9995
-
-    def convert_to_pds(self, d_op, action):
-        res = self.observation_space
-        if res[1] >= d_op:
-            res[1] = max(res[1] - d_op - action, 0)
-        return res
+        self.alpha = 0.9
 
     def act(self, state):
         action = int(1e9)
@@ -30,9 +25,23 @@ class Solver:
         return action
 
     # Batch update
-    def update(self, time):
-        self.cost_exp = (1 - np.pow(self.learning_rate, time)) * self.cost_exp + np.pow(self.learning_rate, time) * 
-        pass
+    @property
+    def update(self, time, actual_cost, env_state, action, d_op):
+        updated_cost_exp = (1 - np.pow(self.learning_rate, time)) * self.cost_exp + np.pow(self.learning_rate, time) * actual_cost
+        for (s, a) in self.zip_space:
+            self.cost_exp[(s, a)] = updated_cost_exp
+
+        updated_val_for_norm_cost = int(1e9)
+        for a in self.action_space:
+            updated_val_for_norm_cost = np.min(updated_val_for_norm_cost, updated_cost_exp + self.delta * self.pds_value)
+        for s in self.observation_space:
+            if s[3] == env_state:
+                self.normal_value[s] = env_state
+
+        for s in self.observation_space:
+            if s[1] >= d_op:
+                pds_s = max(s[1] - d_op - action, 0)
+            self.pds_value[pds_s] = (1 - np.pow(self.alpha, time)) * self.pds_value[pds_s] + np.pow(self.alpha, time) * self.normal_value[s]
 
 def offload_autoscale_agent():
     env = gym.make('offload-autoscale-discrete-v0')
@@ -47,7 +56,6 @@ def offload_autoscale_agent():
             state, reward, done, info = env.step(action)
             solver.update()
             if done:
-
                 break
         if terminal:
             exit()
