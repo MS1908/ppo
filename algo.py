@@ -1,10 +1,7 @@
 import gym
 import numpy as np
-<<<<<<< HEAD
 import pandas as pd
 import matplotlib.pyplot as plt
-=======
->>>>>>> 559ed5d145afc4aa8231b9d9fd5124fa3773d0d6
 
 class Solver:
     def __init__(self, observation_space, action_space):
@@ -57,6 +54,8 @@ def offload_autoscale_agent():
     while True:
         state = env.reset()
         episode += 1
+    while True:
+        state = env.reset()
         terminal = False # terminal condition of algo
         while True:
             action = solver.act(state)
