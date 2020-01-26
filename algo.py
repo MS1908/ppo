@@ -45,6 +45,9 @@ class Solver:
                 pds_s = max(s[1] - d_op - action, 0)
             self.pds_value[pds_s] = (1 - np.pow(self.alpha, time)) * self.pds_value[pds_s] + np.pow(self.alpha, time) * self.normal_value[s]
 
+reward_list = []
+avg_reward_list = []
+
 def offload_autoscale_agent():
     env = gym.make('offload-autoscale-discrete-v0')
     observation_space = env.observation_space.shape[0]
@@ -54,8 +57,6 @@ def offload_autoscale_agent():
     while True:
         state = env.reset()
         episode += 1
-    while True:
-        state = env.reset()
         terminal = False # terminal condition of algo
         while True:
             action = solver.act(state)
