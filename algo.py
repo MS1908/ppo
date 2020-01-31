@@ -1,5 +1,6 @@
 import gym
 import discrete
+import itertools
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -8,7 +9,7 @@ class Solver:
     def __init__(self, observation_space, action_space):
         self.observation_space = observation_space
         self.action_space = action_space
-        self.zip_space = zip(observation_space, action_space)
+        self.zip_space = zip(itertools.repeat(observation_space), itertools.repeat(action_space))
 
         self.cost_exp = {0 for (s, a) in self.zip_space}
         self.normal_value = {0 for s in self.observation_space}
@@ -77,7 +78,7 @@ def offload_autoscale_agent():
 
 offload_autoscale_agent()
 
-df=pd.DataFrame({'x': range(10000), 'y': avg_reward_list})
+df=pd.DataFrame({'x': range(1000), 'y': avg_reward_list})
 plt.xlabel("Time Slot")
 plt.ylabel("Time Average Cost")
 plt.plot( 'x', 'y', data=df, marker='', color='skyblue', linewidth=1, label="algo")
