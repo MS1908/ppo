@@ -13,7 +13,7 @@ env = gym.make('offload-autoscale-v0')
 env = DummyVecEnv([lambda: env])
 
 model = PPO2(MlpPolicy, env, verbose=1)
-model.learn(total_timesteps=1000000)
+model.learn(total_timesteps=100)
 
 rewards_list_ppo = []
 avg_rewards_ppo = []
@@ -27,7 +27,8 @@ rewards_list_fixed_2 = []
 avg_rewards_fixed_2 = []
 obs = env.reset()
 t = 0
-for i in range(10000):
+
+for i in range(200):
     action = [0.0]
     obs, rewards, dones, info = env.step(action)
     rewards_list_fixed_0.append(1 / rewards)
