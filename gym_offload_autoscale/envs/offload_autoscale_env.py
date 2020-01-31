@@ -3,6 +3,7 @@ import math
 import numpy as np
 from gym import error, spaces, utils
 from gym.utils import seeding
+import scipy.optimize as optimize
 
 class OffloadAutoscaleEnv(gym.Env):
     # metadata = {'render.modes': ['human']}
@@ -163,8 +164,8 @@ class OffloadAutoscaleEnv(gym.Env):
             cost_bak = 0
         cost = cost_delay + cost_batery + cost_bak
 
-        cost_delay_local = self.cost_delay_local_function(self.m, self.mu)
-        cost_delay_cloud = self.cost_delay_cloud_function(self.mu, h, lamda)
+        # cost_delay_local = self.cost_delay_local_function(self.m, self.mu)
+        # cost_delay_cloud = self.cost_delay_cloud_function(self.mu, h, lamda)
         # print('\t{:20} {:20} {:20} {:10}'.format("cost_delay_local", "cost_delay_cloud", "cost_batery", "cost_bak"))
         # print('\t{:<20.3f} {:<20.2f} {:<20.2f} {:<10.2f}'.format(cost_delay_local, cost_delay_cloud, cost_batery, cost_bak))
         return cost
