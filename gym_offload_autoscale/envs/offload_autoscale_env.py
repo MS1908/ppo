@@ -224,17 +224,33 @@ class OffloadAutoscaleEnv(gym.Env):
             return 1
         else:
             return (fixed_action-low_bound)/(high_bound-low_bound)
+    def myopic_action_cal(self):
+        d_op = self.get_dop()
+        if self.state[1] <= d_op + 150:
+            return 0
+        else:
+            def f(params):
+                m, mu = params
+                return mu / (m * self.server_service_rate - mu) + (self.state[0] - mu) * self.state[2] + self.normalized_unit_depreciation_cost * (self.server_power_consumption * m + self.server_power_consumption / self.lamda_low * mu)
+        initial_guess = [1, 1]
+        result = optimize.minimize(f, initial_guess)
+        if result.success:
+            fitted_params = result.x
+            print(fitted_params)
+        else:
+            raise ValueError(result.message)
+        return self.get_dcom(fitted_params[0], fitted_params[1])
 
-# MyEnv = OffloadAutoscaleEnv()
-# MyEnv.reset()
-# MyEnv.render()
+MyEnv = OffloadAutoscaleEnv()
+MyEnv.reset()
+MyEnv.render()
 # # state_list = []
-# for i in range(200):
-#     print('STEP: ', i)
-#     action = MyEnv.fixed_action_cal(1000)
+for i in range(200):
+    print('STEP: ', i)
+    action = MyEnv.myopic_action_cal()
 # #     action = MyEnv.action_space.sample()
 #     state, reward, done, info = MyEnv.step(action)
-#     MyEnv.render()
+    MyEnv.render()
 #     state_list.append(MyEnv.render()[4])
 #     if done: MyEnv.reset()
 # import matplotlib.pyplot as plt
