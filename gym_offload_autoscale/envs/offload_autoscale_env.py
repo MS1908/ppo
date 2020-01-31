@@ -152,9 +152,10 @@ class OffloadAutoscaleEnv(gym.Env):
             # print('deaction ', de_action)
             return self.get_m_mu(de_action)
 
-    def reward_func(self):
+    def reward_func(self, action):
         lamda, b, h, _ = self.state
         cost_delay_wireless = 0
+        self.m, self.mu = self.cal(action) 
         cost_delay = self.cost_function(self.m, self.mu, h, lamda) + cost_delay_wireless
         if self.d_op > b:
             cost_batery = 0
@@ -189,7 +190,7 @@ class OffloadAutoscaleEnv(gym.Env):
         self.d = self.d_op + self.d_com
         # print('\t{:20}{:20}{:20}{:20}{:10}'.format('d_op','d_com','d','number_server','local_workload'))
         # print('\t{:<20.3f}{:<20.3f}{:<20.3f}{:<20.3f}{:<10.3f}'.format(d_op, d_com, d, number_of_server, local_workload))
-        reward = self.reward_func()
+        reward = self.reward_func(action)
         lambda_t = self.get_lambda()
         b_t = self.get_b() 
         h_t = self.get_h()
@@ -230,22 +231,23 @@ class OffloadAutoscaleEnv(gym.Env):
             return 0
         else:
             def f(params):
-                m, mu = params
-                return mu / (m * self.server_service_rate - mu) + (self.state[0] - mu) * self.state[2] + self.normalized_unit_depreciation_cost * (self.server_power_consumption * m + self.server_power_consumption / self.lamda_low * mu)
-        initial_guess = [1, 1]
-        result = optimize.minimize(f, initial_guess)
+                action = params
+                return self.reward_func(action)
+        initial_guess = 0
+        result = optimize.minimize(f, initial_guess, method = 'Nelder-Mead')
         if result.success:
             fitted_params = result.x
-            print(fitted_params)
+            if fitted_params != 0:
+                print(fitted_params)
         else:
             raise ValueError(result.message)
-        return self.get_dcom(fitted_params[0], fitted_params[1])
+        return fitted_params
 
 MyEnv = OffloadAutoscaleEnv()
 MyEnv.reset()
 MyEnv.render()
 # # state_list = []
-for i in range(200):
+for i in range(2000):
     print('STEP: ', i)
     action = MyEnv.myopic_action_cal()
 # #     action = MyEnv.action_space.sample()
