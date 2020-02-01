@@ -237,22 +237,22 @@ class OffloadAutoscaleEnv(gym.Env):
         result = optimize.minimize(f, initial_guess, method = 'Nelder-Mead')
         if result.success:
             fitted_params = result.x
-            if fitted_params != 0:
-                print(fitted_params)
+            # if fitted_params != 0:
+                # print(fitted_params)
         else:
             raise ValueError(result.message)
         return fitted_params
 
-MyEnv = OffloadAutoscaleEnv()
-MyEnv.reset()
-MyEnv.render()
-# # state_list = []
-for i in range(2000):
-    print('STEP: ', i)
-    action = MyEnv.myopic_action_cal()
-# #     action = MyEnv.action_space.sample()
-#     state, reward, done, info = MyEnv.step(action)
-    MyEnv.render()
+# MyEnv = OffloadAutoscaleEnv()
+# MyEnv.reset()
+# MyEnv.render()
+# # # state_list = []
+# for i in range(2000):
+#     print('STEP: ', i)
+#     action = MyEnv.myopic_action_cal()
+# # #     action = MyEnv.action_space.sample()
+# #     state, reward, done, info = MyEnv.step(action)
+#     MyEnv.render()
 #     state_list.append(MyEnv.render()[4])
 #     if done: MyEnv.reset()
 # import matplotlib.pyplot as plt

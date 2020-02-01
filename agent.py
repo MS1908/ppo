@@ -13,7 +13,7 @@ env = gym.make('offload-autoscale-v0')
 env = DummyVecEnv([lambda: env])
 
 model = PPO2(MlpPolicy, env, verbose=1)
-model.learn(total_timesteps=10000)
+model.learn(total_timesteps=96000)
 # print(env.env_method('fixed_action_cal', 1000))
 # exit()
 rewards_list_ppo = []
@@ -29,12 +29,12 @@ avg_rewards_fixed_2 = []
 obs = env.reset()
 t = 0
 t_range = 10000
-for i in range(t_range):
-    action = env.env_method('myopic_action_cal')
-    obs, rewards, dones, info = env.step(action)
-    rewards_list_myopic.append(1 / rewards)
-    avg_rewards_myopic.append(np.mean(rewards_list_myopic[-1000:-1]))
-    if dones: env.reset()
+# for i in range(t_range):
+#     action = env.env_method('myopic_action_cal')
+#     obs, rewards, dones, info = env.step(action)
+#     rewards_list_myopic.append(1 / rewards)
+#     avg_rewards_myopic.append(np.mean(rewards_list_myopic[-1000:-1]))
+#     if dones: env.reset()
 
 for i in range(t_range):
     # action = env.env_method('fixed_action_cal', 400)
@@ -66,13 +66,13 @@ for i in range(t_range):
     if dones: env.reset()
     # env.render()
 import matplotlib.pyplot as plt
-df=pd.DataFrame({'x': range(t_range), 'y_1': avg_rewards_ppo, 'y_2': avg_rewards_random, 'y_3': avg_rewards_myopic, 'y_4': avg_rewards_fixed_1, 'y_5': avg_rewards_fixed_2})
-# df=pd.DataFrame({'x': range(t_range), 'y_1': avg_rewards_ppo, 'y_2': avg_rewards_random, 'y_4': avg_rewards_fixed_1, 'y_5': avg_rewards_fixed_2})
+# df=pd.DataFrame({'x': range(t_range), 'y_1': avg_rewards_ppo, 'y_2': avg_rewards_random, 'y_3': avg_rewards_myopic, 'y_4': avg_rewards_fixed_1, 'y_5': avg_rewards_fixed_2})
+df=pd.DataFrame({'x': range(t_range), 'y_1': avg_rewards_ppo, 'y_2': avg_rewards_random, 'y_4': avg_rewards_fixed_1, 'y_5': avg_rewards_fixed_2})
 plt.xlabel("Time Slot")
 plt.ylabel("Time Average Cost")
 plt.plot( 'x', 'y_1', data=df, marker='', color='red', linewidth=1, label="ppo")
 plt.plot( 'x', 'y_2', data=df, marker='', color='olive', linewidth=1, label="random")
-plt.plot( 'x', 'y_3', data=df, marker='', color='lightblue', linewidth=1, label="fixed 0")
+# plt.plot( 'x', 'y_3', data=df, marker='', color='lightblue', linewidth=1, label="fixed 0")
 plt.plot( 'x', 'y_4', data=df, marker='', color='skyblue', linewidth=1, label="fixed 0.4kW")
 plt.plot( 'x', 'y_5', data=df, marker='', color='deepskyblue', linewidth=1, label="fixed 1kW")
 plt.legend()
