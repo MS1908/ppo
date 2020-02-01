@@ -37,8 +37,8 @@ t_range = 10000
 #     if dones: env.reset()
 
 for i in range(t_range):
-    # action = env.env_method('fixed_action_cal', 400)
-    action = [0]
+    action = env.env_method('fixed_action_cal', 400)
+    # action = [0]
     obs, rewards, dones, info = env.step(action)
     rewards_list_fixed_1.append(1 / rewards)
     avg_rewards_fixed_1.append(np.mean(rewards_list_fixed_1[-1000:-1]))
