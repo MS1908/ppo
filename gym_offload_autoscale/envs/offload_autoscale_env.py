@@ -3,7 +3,7 @@ import math
 import numpy as np
 from gym import error, spaces, utils
 from gym.utils import seeding
-import scipy.optimize as optimize
+# import scipy.optimize as optimize
 
 class OffloadAutoscaleEnv(gym.Env):
     # metadata = {'render.modes': ['human']}
@@ -29,7 +29,6 @@ class OffloadAutoscaleEnv(gym.Env):
         self.d_sta = 300
         self.coef_dyn = 0.5
         self.server_power_consumption = 150
-        self.b_com = 10
 
         self.time_steps_per_episode = 96
         self.episode = 0
