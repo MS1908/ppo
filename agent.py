@@ -4,6 +4,19 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+plt.xlabel("Time Slot")
+plt.ylabel("Time Average Cost")
+data = []
+for x in range(5):
+    data.append([x, x, x])
+df = pd.DataFrame(data, columns=['delay cost', 'back-up power cost', 'battery cost'])
+df.plot.area()
+plt.title('fixed 1 kW')
+plt.legend()
+plt.grid()
+plt.show()
+exit()
+
 from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.vec_env import DummyVecEnv
 from stable_baselines import PPO2
