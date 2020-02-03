@@ -60,6 +60,7 @@ for i in range(t_range):
 
 for i in range(t_range):
     action, _states = model.predict(obs)
+    # action = np.random.uniform(0, 1, 1)
     obs, rewards, dones, info = env.step(action)
     rewards_list_ppo.append(1 / rewards)
     avg_rewards_ppo.append(np.mean(rewards_list_ppo[:]))
