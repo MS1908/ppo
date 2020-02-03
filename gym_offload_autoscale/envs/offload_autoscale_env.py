@@ -57,7 +57,8 @@ class OffloadAutoscaleEnv(gym.Env):
         self.g = 0
 
         self.reward_time = 0
-        self.reward_energy = 0
+        self.reward_bak = 0
+        self.reward_bat = 0
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -165,8 +166,9 @@ class OffloadAutoscaleEnv(gym.Env):
         else:
             cost_batery = self.normalized_unit_depreciation_cost * np.maximum(self.d - self.g, 0)
             cost_bak = 0
+        self.reward_bak = cost_bak
+        self.reward_bat = cost_batery
         self.reward_time = cost_delay
-        self.reward_energy = cost_batery + cost_bak
         cost = cost_delay + cost_batery + cost_bak
 
 
@@ -217,7 +219,7 @@ class OffloadAutoscaleEnv(gym.Env):
         # print('{:>7} {:>7} {:>7} {:>7} {:>4} {:>7} {:>7} {:>7} {:>4} {:>4}'.format("g", "d_op", "d_com", "d", "m", "mu", "lamd_t+1","b_t+1", "h_t+1", "e_t+1"))
         # print('{:7.2f} {:7.2f} {:7.2f} {:7.2f} {:4} {:7.2f} {:8.2f} {:7.2f} {:5.2f} {:5.0f}'.format(self.g,self.d_op, self.d_com,self.d,self.m,self.mu, self.state[0],self.state[1],self.state[2],self.state[3]))
         # return self.state[0],self.state[1],self.state[2],self.state[3],self.g,self.d_op, self.d_com,self.d,self.m,self.mu
-        return self.reward_time, self.reward_energy
+        return  self.reward_time, self.reward_bak, self.reward_bat
     def fixed_action_cal(self, fixed_action):
         lamda, b, h, _ = self.state
         d_op = self.get_dop()
