@@ -16,7 +16,7 @@ env = gym.make('offload-autoscale-v0')
 env = DummyVecEnv([lambda: env])
 rand_seed = 1234
 model = PPO2(MlpPolicy, env, verbose=1, seed=rand_seed)
-model.learn(total_timesteps=1000)
+model.learn(total_timesteps=100000)
 # print(env.env_method('fixed_action_cal', 1000))
 # exit()
 rewards_list_ppo = []
@@ -31,7 +31,7 @@ rewards_list_fixed_2 = []
 avg_rewards_fixed_2 = []
 
 s = 2
-t_range = 100
+t_range = 10000
 
 set_global_seeds(100)
 env.env_method('seed', rand_seed)
@@ -77,7 +77,7 @@ os.environ['PYTHONHASHSEED']=str(rand_seed)
 model.set_random_seed(rand_seed)
 obs = env.reset()
 for i in range(t_range):
-    action, _states = model.predict(obs)
+    action, _states = model.predict(obs, deterministic=True)
     # action = np.random.uniform(0, 1, 1)
     obs, rewards, dones, info = env.step(action)
     rewards_list_random.append(1 / rewards/ s)
@@ -91,7 +91,7 @@ os.environ['PYTHONHASHSEED']=str(rand_seed)
 model.set_random_seed(rand_seed)
 obs = env.reset()
 for i in range(t_range):
-    action, _states = model.predict(obs)
+    action, _states = model.predict(obs, deterministic=True)
     # action = np.random.uniform(0, 1, 1)
     obs, rewards, dones, info = env.step(action)
     rewards_list_ppo.append(1 / rewards/ s)
