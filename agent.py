@@ -7,14 +7,15 @@ import os
 
 from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.vec_env import DummyVecEnv
+from stable_baselines.common import set_global_seeds
 from stable_baselines import PPO2
 
 env = gym.make('offload-autoscale-v0')
 # Optional: PPO2 requires a vectorized environment to run
 # the env is now wrapped automatically when passing it to the constructor
 env = DummyVecEnv([lambda: env])
-
-model = PPO2(MlpPolicy, env, verbose=1)
+rand_seed = 1234
+model = PPO2(MlpPolicy, env, verbose=1, seed=rand_seed)
 model.learn(total_timesteps=1000)
 # print(env.env_method('fixed_action_cal', 1000))
 # exit()
@@ -28,10 +29,11 @@ rewards_list_fixed_1 = []
 avg_rewards_fixed_1 = []
 rewards_list_fixed_2 = []
 avg_rewards_fixed_2 = []
-rand_seed = 1234
+
 s = 2
 t_range = 100
 
+set_global_seeds(100)
 env.env_method('seed', rand_seed)
 np.random.seed(rand_seed)
 os.environ['PYTHONHASHSEED']=str(rand_seed)
@@ -43,6 +45,7 @@ for i in range(t_range):
     avg_rewards_myopic.append(np.mean(rewards_list_myopic[:]))
     if dones: env.reset()
 
+set_global_seeds(100)
 env.env_method('seed', rand_seed)
 np.random.seed(rand_seed)
 os.environ['PYTHONHASHSEED']=str(rand_seed)
@@ -54,6 +57,7 @@ for i in range(t_range):
     avg_rewards_fixed_1.append(np.mean(rewards_list_fixed_1[:]))
     if dones: env.reset()
 
+set_global_seeds(100)
 env.env_method('seed', rand_seed)
 np.random.seed(rand_seed)
 os.environ['PYTHONHASHSEED']=str(rand_seed)
@@ -65,9 +69,12 @@ for i in range(t_range):
     avg_rewards_fixed_2.append(np.mean(rewards_list_fixed_2[:]))
     if dones: env.reset()
 
+set_global_seeds(100)
 env.env_method('seed', rand_seed)
 np.random.seed(rand_seed)
 os.environ['PYTHONHASHSEED']=str(rand_seed)
+os.environ['PYTHONHASHSEED']=str(rand_seed)
+model.set_random_seed(rand_seed)
 obs = env.reset()
 for i in range(t_range):
     action, _states = model.predict(obs)
@@ -77,9 +84,11 @@ for i in range(t_range):
     avg_rewards_random.append(np.mean(rewards_list_random[:]))
     if dones: env.reset()
 
+set_global_seeds(100)
 env.env_method('seed', rand_seed)
 np.random.seed(rand_seed)
 os.environ['PYTHONHASHSEED']=str(rand_seed)
+model.set_random_seed(rand_seed)
 obs = env.reset()
 for i in range(t_range):
     action, _states = model.predict(obs)
