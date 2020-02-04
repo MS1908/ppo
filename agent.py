@@ -27,7 +27,7 @@ avg_rewards_fixed_1 = []
 rewards_list_fixed_2 = []
 avg_rewards_fixed_2 = []
 obs = env.reset()
-t = 0
+
 t_range = 10000
 for i in range(t_range):
     action = env.env_method('myopic_action_cal')
