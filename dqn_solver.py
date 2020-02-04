@@ -26,8 +26,8 @@ class DQNSolver:
         self.model.add(Dense(self.action_space, activation="linear"))
         self.model.compile(loss="mse", optimizer=Adam(lr=0.001))
 
-    def remember(self, state, action, reward, next_state, done):
-        self.memory.append((state, action, reward, next_state, done))
+    def remember(self, state, action, reward, next_state, terminal):
+        self.memory.append((state, action, reward, next_state, terminal))
 
     def act(self, state):
         if np.random.rand() < self.exploration_rate:
@@ -53,10 +53,13 @@ reward_list = []
 avg_reward_list = []
 
 def plot():
-    df = pd.DataFrame({'x': range(10000), 'y': avg_reward_list})
+    df = pd.DataFrame({'x': range(96 * 100), 'y': avg_reward_list})
     plt.xlabel("Time Slot")
     plt.ylabel("Average Cost")
-    plt.plot('x', 'y_1', data=df, marker='o', markevery=700, color='navy', linewidth=1, label="q learning")
+    plt.plot('x', 'y', data=df, marker='o', markevery=700, color='navy', linewidth=1, label="q learning")
+    plt.legend()
+    plt.grid()
+    plt.show()
     print('Avg cost', avg_reward_list[-1])
 
 def agent():
@@ -67,19 +70,30 @@ def agent():
     episode = 0
     while True:
         state = env.reset()
-        episode += 1
+        state = np.reshape(state, [1, observation_space])
         terminal = False
+        step = 0
         while True:
+            done = False
             action = solver.act(state)
-            state, reward, done, info = env.step(action)
+            next_state, reward, _, _ = env.step(action)
+            next_state = np.reshape(next_state, [1, observation_space])
+            step += 1
+            # print('\tstate: ', state)
             reward_list.append(1 / reward)
             avg_reward_list.append(np.mean(reward_list[:]))
+            if step >= 96:
+                done = True
+            solver.remember(state, action, reward, next_state, done)
+            state = next_state
             if done:
+                episode += 1
                 break
-        if episode == 10000:
+            solver.replay()
+        if episode == 100:
             terminal = True
         if terminal:
             plot()
-            exit()
+            return
 
 agent()

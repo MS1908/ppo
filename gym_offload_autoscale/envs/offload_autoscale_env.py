@@ -3,7 +3,7 @@ import math
 import numpy as np
 from gym import error, spaces, utils
 from gym.utils import seeding
-# import scipy.optimize as optimize
+from scipy.optimize import minimize_scalar
 
 class OffloadAutoscaleEnv(gym.Env):
     # metadata = {'render.modes': ['human']}
@@ -16,16 +16,14 @@ class OffloadAutoscaleEnv(gym.Env):
         self.lamda_low = 10
         self.b_high = self.batery_capacity / self.timeslot  # W
         self.b_low = 0
-        self.h_high = 0.06  # s/unit
-        self.h_low = 0.02
+        self.h_high = 0.06*5  # s/unit
+        self.h_low = 0.02*5
         self.e_low = 0
         self.e_high = 2
         self.back_up_cost_coef = 0.15
         self.normalized_unit_depreciation_cost = 0.01
         self.max_number_of_server = 15
 
-        self.time_cost = 0
-        self.energy_cost = 0
 
         # power model
         self.d_sta = 300
@@ -112,7 +110,7 @@ class OffloadAutoscaleEnv(gym.Env):
         if m == 0 and mu == 0: return 0
         return mu / (m * self.server_service_rate - mu)
     def cost_delay_cloud_function(self, mu, h, lamda):
-        return (lamda - mu) * h 
+        return (lamda - mu) * h
     def cost_function(self, m, mu, h, lamda):
         return self.cost_delay_local_function(m, mu) + self.cost_delay_cloud_function(mu, h, lamda)
     def  get_m_mu(self, de_action):
@@ -156,7 +154,7 @@ class OffloadAutoscaleEnv(gym.Env):
     def reward_func(self, action):
         lamda, b, h, _ = self.state
         cost_delay_wireless = 0
-        self.m, self.mu = self.cal(action) 
+        self.m, self.mu = self.cal(action)
         cost_delay = self.cost_function(self.m, self.mu, h, lamda) + cost_delay_wireless
         if self.d_op > b:
             cost_batery = 0
@@ -164,10 +162,8 @@ class OffloadAutoscaleEnv(gym.Env):
         else:
             cost_batery = self.normalized_unit_depreciation_cost * np.maximum(self.d - self.g, 0)
             cost_bak = 0
-        self.time_cost = cost_delay
-        self.energy_cost = cost_batery + cost_bak
-        cost = cost_delay + cost_batery + cost_bak
 
+        cost = cost_delay + cost_batery + cost_bak
         # cost_delay_local = self.cost_delay_local_function(self.m, self.mu)
         # cost_delay_cloud = self.cost_delay_cloud_function(self.mu, h, lamda)
         # print('\t{:20} {:20} {:20} {:10}'.format("cost_delay_local", "cost_delay_cloud", "cost_batery", "cost_bak"))
@@ -188,14 +184,14 @@ class OffloadAutoscaleEnv(gym.Env):
         # print('\taction: ', action)
 
         self.d_op = self.get_dop()
-        self.m, self.mu = self.cal(action) 
+        self.m, self.mu = self.cal(action)
         self.d_com = self.get_dcom(self.m, self.mu)
         self.d = self.d_op + self.d_com
         # print('\t{:20}{:20}{:20}{:20}{:10}'.format('d_op','d_com','d','number_server','local_workload'))
         # print('\t{:<20.3f}{:<20.3f}{:<20.3f}{:<20.3f}{:<10.3f}'.format(d_op, d_com, d, number_of_server, local_workload))
         reward = self.reward_func(action)
         lambda_t = self.get_lambda()
-        b_t = self.get_b() 
+        b_t = self.get_b()
         h_t = self.get_h()
         e_t = self.get_e()
         self.state = np.array([lambda_t, b_t, h_t, e_t])
@@ -229,32 +225,31 @@ class OffloadAutoscaleEnv(gym.Env):
         else:
             return (fixed_action-low_bound)/(high_bound-low_bound)
     def myopic_action_cal(self):
+        lamda, b, h, _ = self.state
         d_op = self.get_dop()
-        if self.state[1] <= d_op + 150:
+        if b <= d_op + 150:
             return 0
         else:
-            def f(params):
-                action = params
-                return self.reward_func(action)
-        initial_guess = 0
-        result = optimize.minimize(f, initial_guess, method = 'Nelder-Mead')
-        if result.success:
-            fitted_params = result.x
-            # if fitted_params != 0:
-                # print(fitted_params)
-        else:
-            raise ValueError(result.message)
-        return fitted_params
-
+            ans = math.inf
+            for m in range(1, self.max_number_of_server):
+                def f(mu, m, h, lamda):
+                    return mu/(m*self.server_service_rate-mu)+h*(lamda - mu)+self.normalized_unit_depreciation_cost*(self.server_power_consumption*m+self.server_power_consumption/self.lamda_low*mu)
+                res = minimize_scalar(f, bounds=(0, min(lamda,m*self.server_service_rate)), args=((m, h, lamda)), method='bounded')
+                if res.fun < ans:
+                    ans = res.fun
+                    params = [m, res.x]
+            d_com = self.server_power_consumption*params[0]+self.server_power_consumption/self.lamda_low*params[1]
+            return self.fixed_action_cal(d_com)
 # MyEnv = OffloadAutoscaleEnv()
 # MyEnv.reset()
 # MyEnv.render()
-# # # state_list = []
-# for i in range(2000):
+# # # # state_list = []
+# for i in range(20):
 #     print('STEP: ', i)
 #     action = MyEnv.myopic_action_cal()
-# # #     action = MyEnv.action_space.sample()
-# #     state, reward, done, info = MyEnv.step(action)
+#     print(action)
+# # # #     action = MyEnv.action_space.sample()
+#     state, reward, done, info = MyEnv.step(action)
 #     MyEnv.render()
 #     state_list.append(MyEnv.render()[4])
 #     if done: MyEnv.reset()
