@@ -16,8 +16,8 @@ class OffloadAutoscaleEnv(gym.Env):
         self.lamda_low = 10
         self.b_high = self.batery_capacity / self.timeslot  # W
         self.b_low = 0
-        self.h_high = 0.06  # s/unit
-        self.h_low = 0.02
+        self.h_high = 0.06*5  # s/unit
+        self.h_low = 0.02*5
         self.e_low = 0
         self.e_high = 2
         self.back_up_cost_coef = 0.15
@@ -162,8 +162,8 @@ class OffloadAutoscaleEnv(gym.Env):
         else:
             cost_batery = self.normalized_unit_depreciation_cost * np.maximum(self.d - self.g, 0)
             cost_bak = 0
-        cost = cost_delay + cost_batery + cost_bak
 
+        cost = cost_delay + cost_batery + cost_bak
         # cost_delay_local = self.cost_delay_local_function(self.m, self.mu)
         # cost_delay_cloud = self.cost_delay_cloud_function(self.mu, h, lamda)
         # print('\t{:20} {:20} {:20} {:10}'.format("cost_delay_local", "cost_delay_cloud", "cost_batery", "cost_bak"))
