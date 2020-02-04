@@ -24,6 +24,8 @@ class OffloadAutoscaleEnv(gym.Env):
         self.normalized_unit_depreciation_cost = 0.01
         self.max_number_of_server = 15
 
+        self.time_cost = 0
+        self.energy_cost = 0
 
         # power model
         self.d_sta = 300
@@ -162,6 +164,8 @@ class OffloadAutoscaleEnv(gym.Env):
         else:
             cost_batery = self.normalized_unit_depreciation_cost * np.maximum(self.d - self.g, 0)
             cost_bak = 0
+        self.time_cost = cost_delay
+        self.energy_cost = cost_batery + cost_bak
         cost = cost_delay + cost_batery + cost_bak
 
         # cost_delay_local = self.cost_delay_local_function(self.m, self.mu)
