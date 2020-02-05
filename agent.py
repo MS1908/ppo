@@ -252,6 +252,7 @@ def agent():
             solver.replay()
             if accumulated_step == t_range:
                 terminal = True
+                break
         if terminal:
             return
 
