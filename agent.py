@@ -1,8 +1,8 @@
 import gym
 import gym_offload_autoscale
+import random
 import numpy as np
 import pandas as pd
-import random
 import os
 import matplotlib.pyplot as plt
 
@@ -54,11 +54,6 @@ class DQNSolver:
         self.exploration_rate *= 0.995
         self.exploration_rate = max(0.01, self.exploration_rate)
 
-env = gym.make('offload-autoscale-v0')
-# Optional: PPO2 requires a vectorized environment to run
-# the env is now wrapped automatically when passing it to the constructor
-rand_seed = 1234
-env = DummyVecEnv([lambda: env])
 
 def set_seed(rand_seed):
     set_global_seeds(100)
@@ -67,95 +62,156 @@ def set_seed(rand_seed):
     os.environ['PYTHONHASHSEED']=str(rand_seed)
     model.set_random_seed(rand_seed)
 
-model = PPO2(MlpPolicy, env, verbose=1)
+env = gym.make('offload-autoscale-v0')
+# Optional: PPO2 requires a vectorized environment to run
+# the env is now wrapped automatically when passing it to the constructor
+env = DummyVecEnv([lambda: env])
+rand_seed = 1234
+model = PPO2(MlpPolicy, env, verbose=1, seed=rand_seed)
 model.learn(total_timesteps=100000)
-# print(env.env_method('fixed_action_cal', 1000))
-# exit()
+
 rewards_list_ppo = []
 avg_rewards_ppo = []
+rewards_time_list_ppo  = []
+avg_rewards_time_list_ppo = []
+rewards_bak_list_ppo  = []
+avg_rewards_bak_list_ppo = []
+rewards_bat_list_ppo  = []
+avg_rewards_bat_list_ppo = []
+ppo_data = []
+
 rewards_list_random = []
 avg_rewards_random = []
+rewards_time_list_random  = []
+avg_rewards_time_list_random = []
+rewards_bak_list_random  = []
+avg_rewards_bak_list_random = []
+rewards_bat_list_random  = []
+avg_rewards_bat_list_random = []
+random_data = []
+
 rewards_list_myopic = []
 avg_rewards_myopic = []
+rewards_time_list_myopic  = []
+avg_rewards_time_list_myopic = []
+rewards_bak_list_myopic  = []
+avg_rewards_bak_list_myopic = []
+rewards_bat_list_myopic  = []
+avg_rewards_bat_list_myopic = []
+myopic_data = []
+
 rewards_list_fixed_1 = []
 avg_rewards_fixed_1 = []
+rewards_time_list_fixed_1 = []
+avg_rewards_time_list_fixed_1 = []
+rewards_bak_list_fixed_1  = []
+avg_rewards_bak_list_fixed_1 = []
+rewards_bat_list_fixed_1  = []
+avg_rewards_bat_list_fixed_1 = []
+fixed_1_data = []
+
 rewards_list_fixed_2 = []
 avg_rewards_fixed_2 = []
-obs = env.reset()
-t = 0
+rewards_time_list_fixed_2 = []
+avg_rewards_time_list_fixed_2 = []
+rewards_bak_list_fixed_2  = []
+avg_rewards_bak_list_fixed_2 = []
+rewards_bat_list_fixed_2  = []
+avg_rewards_bat_list_fixed_2 = []
+fixed_2_data = []
+
+s = 2
 t_range = 2000
-# for i in range(t_range):
-#     action = env.env_method('myopic_action_cal')
-#     obs, rewards, dones, info = env.step(action)
-#     rewards_list_myopic.append(1 / rewards)
-#     avg_rewards_myopic.append(np.mean(rewards_list_myopic[-1000:-1]))
-#     if dones: env.reset()
 
-energy_rewards_ppo = []
-time_rewards_ppo = []
-energy_rewards_fixed1 = []
-time_rewards_fixed1 = []
-energy_rewards_fixed2 = []
-time_rewards_fixed2 = []
-energy_rewards_random = []
-time_rewards_random = []
-avg_energy_rewards_ppo = []
-avg_time_rewards_ppo = []
-avg_energy_rewards_fixed1 = []
-avg_time_rewards_fixed1 = []
-avg_energy_rewards_fixed2 = []
-avg_time_rewards_fixed2 = []
-avg_energy_rewards_random = []
-avg_time_rewards_random = []
-
+set_seed(rand_seed)
+obs = env.reset()
 for i in range(t_range):
-    action = env.env_method('fixed_action_cal', 400)
-    # action = [0]
+    action = env.env_method('myopic_action_cal')
     obs, rewards, dones, info = env.step(action)
-    rewards_list_fixed_1.append(1 / rewards)
-    avg_rewards_fixed_1.append(np.mean(rewards_list_fixed_1[:]))
-    energy_rewards_fixed1.append(env.get_attr('energy_cost'))
-    time_rewards_fixed1.append(env.get_attr('time_cost'))
-    avg_energy_rewards_fixed1.append(np.mean(energy_rewards_fixed1[:]))
-    avg_time_rewards_fixed1.append(np.mean(time_rewards_fixed1[:]))
+    rewards_list_myopic.append(1 / rewards/ s)
+    avg_rewards_myopic.append(np.mean(rewards_list_myopic[:]))
     if dones: env.reset()
 
+set_seed(rand_seed)
+obs = env.reset()
+for i in range(t_range):
+    action = env.env_method('fixed_action_cal', 400)
+    obs, rewards, dones, info = env.step(action)
+    rewards_list_fixed_1.append(1 / rewards/ s)
+    avg_rewards_fixed_1.append(np.mean(rewards_list_fixed_1[:]))
+    t, bak, bat = env.render()
+    rewards_time_list_fixed_1.append(t)
+    avg_rewards_time_list_fixed_1.append(np.mean(rewards_time_list_fixed_1[:]))
+    rewards_bak_list_fixed_1.append(bak)
+    avg_rewards_bak_list_fixed_1.append(np.mean(rewards_bak_list_fixed_1[:]))
+    rewards_bat_list_fixed_1.append(bat)
+    avg_rewards_bat_list_fixed_1.append(np.mean(rewards_bat_list_fixed_1[:]))
+    fixed_1_data.append([avg_rewards_time_list_fixed_1[-1], avg_rewards_bak_list_fixed_1[-1], avg_rewards_bat_list_fixed_1[-1]])
+    if dones: env.reset()
+
+set_seed(rand_seed)
+obs = env.reset()
 for i in range(t_range):
     action = env.env_method('fixed_action_cal', 1000)
     obs, rewards, dones, info = env.step(action)
-    rewards_list_fixed_2.append(1 / rewards)
+    rewards_list_fixed_2.append(1 / rewards/ s)
     avg_rewards_fixed_2.append(np.mean(rewards_list_fixed_2[:]))
-    energy_rewards_fixed2.append(env.get_attr('energy_cost'))
-    time_rewards_fixed2.append(env.get_attr('time_cost'))
-    avg_energy_rewards_fixed2.append(np.mean(energy_rewards_fixed2[:]))
-    avg_time_rewards_fixed2.append(np.mean(time_rewards_fixed2[:]))
+    t, bak, bat = env.render()
+    rewards_time_list_fixed_2.append(t)
+    avg_rewards_time_list_fixed_2.append(np.mean(rewards_time_list_fixed_2[:]))
+    rewards_bak_list_fixed_2.append(bak)
+    avg_rewards_bak_list_fixed_2.append(np.mean(rewards_bak_list_fixed_2[:]))
+    rewards_bat_list_fixed_2.append(bat)
+    avg_rewards_bat_list_fixed_2.append(np.mean(rewards_bat_list_fixed_2[:]))
+    fixed_2_data.append([avg_rewards_time_list_fixed_2[-1], avg_rewards_bak_list_fixed_2[-1], avg_rewards_bat_list_fixed_2[-1]])
     if dones: env.reset()
 
+set_seed(rand_seed)
+obs = env.reset()
 for i in range(t_range):
     action = np.random.uniform(0, 1, 1)
     obs, rewards, dones, info = env.step(action)
-    rewards_list_random.append(1 / rewards)
+    rewards_list_random.append(1 / rewards/ s)
     avg_rewards_random.append(np.mean(rewards_list_random[:]))
-    energy_rewards_random.append(env.get_attr('energy_cost'))
-    time_rewards_random.append(env.get_attr('time_cost'))
-    avg_energy_rewards_random.append(np.mean(energy_rewards_random[:]))
-    avg_time_rewards_random.append(np.mean(time_rewards_random[:]))
+    t, bak, bat = env.render()
+    rewards_time_list_random.append(t)
+    avg_rewards_time_list_random.append(np.mean(rewards_time_list_random[:]))
+    rewards_bak_list_random.append(bak)
+    avg_rewards_bak_list_random.append(np.mean(rewards_bak_list_random[:]))
+    rewards_bat_list_random.append(bat)
+    avg_rewards_bat_list_random.append(np.mean(rewards_bat_list_random[:]))
+    random_data.append([avg_rewards_time_list_random[-1], avg_rewards_bak_list_random[-1], avg_rewards_bat_list_random[-1]])
     if dones: env.reset()
 
+set_seed(rand_seed)
+
+obs = env.reset()
 for i in range(t_range):
-    action, _states = model.predict(obs)
+    action, _states = model.predict(obs, deterministic=True)
     obs, rewards, dones, info = env.step(action)
-    rewards_list_ppo.append(1 / rewards)
+    rewards_list_ppo.append(1 / rewards/ s)
     avg_rewards_ppo.append(np.mean(rewards_list_ppo[:]))
-    energy_rewards_ppo.append(env.get_attr('energy_cost'))
-    time_rewards_ppo.append(env.get_attr('time_cost'))
-    avg_energy_rewards_ppo.append(np.mean(energy_rewards_ppo[:]))
-    avg_time_rewards_ppo.append(np.mean(time_rewards_ppo[:]))
+    t, bak, bat = env.render()
+    rewards_time_list_ppo.append(t)
+    avg_rewards_time_list_ppo.append(np.mean(rewards_time_list_ppo[:]))
+    rewards_bak_list_ppo.append(bak)
+    avg_rewards_bak_list_ppo.append(np.mean(rewards_bak_list_ppo[:]))
+    rewards_bat_list_ppo.append(bat)
+    avg_rewards_bat_list_ppo.append(np.mean(rewards_bat_list_ppo[:]))
+    ppo_data.append([avg_rewards_time_list_ppo[-1], avg_rewards_bak_list_ppo[-1], avg_rewards_bat_list_ppo[-1]])
     if dones: env.reset()
     # env.render()
 
 dqn_reward_list = []
 avg_dqn_reward_list = []
+rewards_time_list_dqn = []
+avg_rewards_time_list_dqn = []
+rewards_bak_list_dqn = []
+avg_rewards_bak_list_dqn = []
+rewards_bat_list_dqn = []
+avg_rewards_bat_list_dqn = []
+dqn_data = []
+
 def agent():
     env = gym.make('offload-autoscale-v0')
     observation_space = env.observation_space.shape[0]
@@ -176,8 +232,16 @@ def agent():
             step += 1
             accumulated_step += 1
             # print('\tstate: ', state)
-            dqn_reward_list.append(1 / reward)
+            t, bak, bat = env.render()
+            dqn_reward_list.append(1 / reward / s)
             avg_dqn_reward_list.append(np.mean(dqn_reward_list[:]))
+            rewards_time_list_dqn.append(t)
+            avg_rewards_time_list_dqn.append(np.mean(rewards_time_list_dqn[:]))
+            rewards_bak_list_dqn.append(bak)
+            avg_rewards_bak_list_dqn.append(np.mean(rewards_bak_list_dqn[:]))
+            rewards_bat_list_dqn.append(bat)
+            avg_rewards_bat_list_dqn.append(np.mean(rewards_bat_list_dqn[:]))
+            dqn_data.append([avg_rewards_time_list_dqn[-1], avg_rewards_bak_list_dqn[-1], avg_rewards_bat_list_dqn[-1]])
             if step >= 96:
                 done = True
             solver.remember(state, action, reward, next_state, done)
@@ -186,50 +250,105 @@ def agent():
                 # episode += 1
                 break
             solver.replay()
-        if accumulated_step == t_range:
-            terminal = True
+            if accumulated_step == t_range:
+                terminal = True
         if terminal:
             return
 
 agent()
 
-print(avg_rewards_fixed_1[-1], avg_rewards_fixed_2[-1], avg_rewards_random[-1], avg_rewards_ppo[-1], avg_dqn_reward_list[-1])
-import matplotlib.pyplot as plt
+# print('--RESULTS--')
+# print('{:15}{:30}'.format('method','time average cost'))
+# print('{:15}{:<30}'.format('myopic',avg_rewards_myopic[-1]))
+# print('{:15}{:<30}'.format('fixed 0.4kW',avg_rewards_fixed_1[-1]))
+# print('{:15}{:<30}'.format('fixed 1kW',avg_rewards_fixed_2[-1]))
+# print('{:15}{:<30}'.format('random',avg_rewards_random[-1]))
+# print('{:15}{:<30}'.format('PPO', avg_rewards_ppo[-1]))
 
-# df=pd.DataFrame({'x': range(t_range), 'y_1': avg_rewards_ppo, 'y_2': avg_rewards_random, 'y_3': avg_rewards_myopic, 'y_4': avg_rewards_fixed_1, 'y_5': avg_rewards_fixed_2})
-df=pd.DataFrame({'x': range(t_range), 'y_1': avg_rewards_ppo, 'y_2': avg_rewards_random, 'y_4': avg_rewards_fixed_1, 'y_5': avg_rewards_fixed_2})
+# print('--RESULTS--')
+# print('{:15}{:30}'.format('method','time average cost'))
+# # print('{:15}{:<30}'.format('fixed 0.4kW',avg_rewards_fixed_1[-1]))
+# # print('{:15}{:<30}'.format('fixed 1kW',avg_rewards_fixed_2[-1]))
+# # print('{:15}{:<30}'.format('random',avg_rewards_random[-1]))
+# print('{:15}{:<30}'.format('PPO', avg_rewards_ppo[-1]))
+# print('{:15}{:<30}'.format('t', avg_rewards_time_list_ppo[-1]))
+# print('{:15}{:<30}'.format('e', avg_rewards_energy_list_ppo[-1])1
+
+# myopic
+df=pd.DataFrame({'x': range(t_range), 'y_1': avg_rewards_ppo, 'y_2': avg_rewards_random, 'y_3': avg_rewards_myopic, 'y_4': avg_rewards_fixed_1, 'y_5': avg_rewards_fixed_2, 'y_6': avg_dqn_reward_list})
+# df=pd.DataFrame({'x': range(t_range), 'y_1': avg_rewards_ppo, 'y_2': avg_rewards_random, 'y_4': avg_rewards_fixed_1, 'y_5': avg_rewards_fixed_2})
 plt.xlabel("Time Slot")
 plt.ylabel("Time Average Cost")
-plt.plot( 'x', 'y_1', data=df, marker='o',markevery=int(t_range/10), color='red', linewidth=1, label="ppo")
-plt.plot( 'x', 'y_2', data=df, marker='^', markevery=int(t_range/10), color='olive', linewidth=1, label="random")
-# plt.plot( 'x', 'y_3', data=df, marker='', color='lightblue', linewidth=1, label="fixed 0")
-plt.plot( 'x', 'y_4', data=df, marker='*', markevery=int(t_range/10), color='skyblue', linewidth=1, label="fixed 0.4kW")
-plt.plot( 'x', 'y_5', data=df, marker='+', markevery=int(t_range/10), color='navy', linewidth=1, label="fixed 1kW")
+plt.plot( 'x', 'y_1', data=df, marker='o', markevery = int(t_range/10), color='red', linewidth=1, label="ppo")
+plt.plot( 'x', 'y_2', data=df, marker='^', markevery = int(t_range/10), color='olive', linewidth=1, label="random")
+plt.plot( 'x', 'y_3', data=df, marker='s', markevery = int(t_range/10), color='cyan', linewidth=1, label="myopic")
+plt.plot( 'x', 'y_4', data=df, marker='*', markevery = int(t_range/10), color='skyblue', linewidth=1, label="fixed 0.4kW")
+plt.plot( 'x', 'y_5', data=df, marker='+', markevery = int(t_range/10), color='navy', linewidth=1, label="fixed 1kW")
+plt.plot( 'x', 'y_6', data=df, marker='x', markevery = int(t_range/10), color='green', linewidth=1, label="q learning")
+# =======
 
-plt.legend()
-plt.grid()
-plt.show()
+# # plt.subplot(2,2,1)
+# df1 = pd.DataFrame(ppo_data, columns=['delay cost', 'back-up power cost', 'battery cost'])
+# df1.plot.area()
+# # plt.plot(range(t_range), avg_rewards_ppo)
+# plt.grid()
+# plt.ylim(0,20)
+# plt.title('PPO')
+# plt.legend()
+# plt.xlabel("Time Slot")
+# plt.ylabel("Time Average Cost")
+# plt.show()
+#
+# # df=pd.DataFrame({'x': range(t_range), 'y_1': avg_rewards_time_list_ppo,'y_2': avg_rewards_time_list_ppo, 'y_3': avg_rewards_energy_list_ppo})
+# # plt.xlabel("Time Slot")
+# # plt.ylabel("Time Average Cost")
+# # plt.plot( 'x', 'y_1', data=df, marker='o', markevery = 700, color='red', linewidth=1, label="ppo")
+# # plt.plot( 'x', 'y_2', data=df, marker='o', markevery = 700, color='cyan', linewidth=1, label="bak")
+# # plt.plot( 'x', 'y_3', data=df, marker='o', markevery = 700, color='g', linewidth=1, label="energy")
+#
+# # plt.subplot(2,2,2)
+# df2 = pd.DataFrame(random_data, columns=['delay cost', 'back-up power cost', 'battery cost'])
+# df2.plot.area()
+# # plt.plot(range(t_range), avg_rewards_ppo)
+# plt.grid()
+# plt.ylim(0,20)
+# plt.title('random')
+# # plot
+# plt.legend()
+# plt.xlabel("Time Slot")
+# plt.ylabel("Time Average Cost")
+# plt.show()
+#
+# # plt.subplot(2,2,3)
+# df5 = pd.DataFrame(fixed_1_data, columns=['delay cost', 'back-up power cost', 'battery cost'])
+# df5.plot.area()
+# # plt.plot(range(t_range), avg_rewards_fixed_1)
+# plt.grid()
+# plt.ylim(0,20)
+# plt.title('fixed 0.4 kW')
+# plt.legend()
+# plt.xlabel("Time Slot")
+# plt.ylabel("Time Average Cost")
+# plt.show()
+#
+#
+# # plt.subplot(2,2,4)
+# df5 = pd.DataFrame(fixed_2_data, columns=['delay cost', 'back-up power cost', 'battery cost'])
+# df5.plot.area()
+# # plt.plot(range(t_range), avg_rewards_ppo)
+# plt.grid()
+# plt.ylim(0,20)
+# plt.title('fixed 1 kW')
+# plt.legend()
+# plt.xlabel("Time Slot")
+# plt.ylabel("Time Average Cost")
+# plt.show()
 
-df=pd.DataFrame({'x': range(t_range), 'y_1': avg_energy_rewards_ppo, 'y_2': avg_energy_rewards_random, 'y_4': avg_energy_rewards_fixed1, 'y_5': avg_energy_rewards_fixed2})
-plt.xlabel("Time Slot")
-plt.ylabel("Time Average Energy Cost")
-plt.plot( 'x', 'y_1', data=df, marker='o', markevery = 700, color='red', linewidth=1, label="ppo")
-plt.plot( 'x', 'y_2', data=df, marker='^', markevery = 700, color='olive', linewidth=1, label="random")
-# plt.plot( 'x', 'y_3', data=df, marker='', color='lightblue', linewidth=1, label="fixed 0")
-plt.plot( 'x', 'y_4', data=df, marker='*', markevery = 700, color='skyblue', linewidth=1, label="fixed 0.4kW")
-plt.plot( 'x', 'y_5', data=df, marker='+', markevery = 700, color='navy', linewidth=1, label="fixed 1kW")
-plt.legend()
-plt.grid()
-plt.show()
+# df = pd.DataFrame(np.random.rand(10, 4), columns=['a', 'b', 'c', 'd'])
+# df=pd.DataFrame({'x': range(t_range), 'y_1': avg_rewards_ppo, 'y_2': avg_rewards_random, 'y_3': avg_rewards_myopic, 'y_4': avg_rewards_fixed_1, 'y_5': avg_rewards_fixed_2})
+# df=pd.DataFrame({'x': range(t_range), 'y_1': avg_rewards_ppo, 'y_2': avg_rewards_random, 'y_4': avg_rewards_fixed_1, 'y_5': avg_rewards_fixed_2})
 
-df=pd.DataFrame({'x': range(t_range), 'y_1': avg_time_rewards_ppo, 'y_2': avg_time_rewards_random, 'y_4': avg_time_rewards_fixed1, 'y_5': avg_time_rewards_fixed2})
-plt.xlabel("Time Slot")
-plt.ylabel("Time Average Time Cost")
-plt.plot( 'x', 'y_1', data=df, marker='o', markevery = 700, color='red', linewidth=1, label="ppo")
-plt.plot( 'x', 'y_2', data=df, marker='^', markevery = 700, color='olive', linewidth=1, label="random")
+# plt.plot( 'x', 'y_2', data=df, marker='^', markevery = 700, color='olive', linewidth=1, label="random")
 # plt.plot( 'x', 'y_3', data=df, marker='', color='lightblue', linewidth=1, label="fixed 0")
-plt.plot( 'x', 'y_4', data=df, marker='*', markevery = 700, color='skyblue', linewidth=1, label="fixed 0.4kW")
-plt.plot( 'x', 'y_5', data=df, marker='+', markevery = 700, color='navy', linewidth=1, label="fixed 1kW")
-plt.legend()
-plt.grid()
-plt.show()
+# plt.plot( 'x', 'y_4', data=df, marker='*', markevery = 700, color='skyblue', linewidth=1, label="fixed 0.4kW")
+# plt.plot( 'x', 'y_5', data=df, marker='+', markevery = 700, color='navy', linewidth=1, label="fixed 1kW")
