@@ -213,7 +213,6 @@ avg_rewards_bat_list_dqn = []
 dqn_data = []
 
 def agent():
-    env = gym.make('offload-autoscale-v0')
     observation_space = env.observation_space.shape[0]
     action_space = env.action_space.shape[0]
     solver = DQNSolver(observation_space, action_space)
