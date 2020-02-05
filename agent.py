@@ -75,7 +75,7 @@ rewards_bat_list_fixed_2  = []
 avg_rewards_bat_list_fixed_2 = []
 fixed_2_data = []
 
-s = 2
+s = 1
 t_range = 10000
 
 set_seed(rand_seed)

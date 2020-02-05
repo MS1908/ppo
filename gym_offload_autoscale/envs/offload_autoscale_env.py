@@ -23,7 +23,7 @@ class OffloadAutoscaleEnv(gym.Env):
         self.back_up_cost_coef = 0.15
         self.normalized_unit_depreciation_cost = 0.01
         self.max_number_of_server = 15
-
+        self.priority = 1
 
         # power model
         self.d_sta = 300
@@ -166,6 +166,9 @@ class OffloadAutoscaleEnv(gym.Env):
         else:
             cost_batery = self.normalized_unit_depreciation_cost * np.maximum(self.d - self.g, 0)
             cost_bak = 0
+        cost_delay = cost_delay*self.priority
+        cost_batery = cost_batery*(1-self.priority)
+        cost_bak = cost_bak*(1-self.priority)
         self.reward_bak = cost_bak
         self.reward_bat = cost_batery
         self.reward_time = cost_delay
@@ -240,7 +243,7 @@ class OffloadAutoscaleEnv(gym.Env):
             ans = math.inf
             for m in range(1, self.max_number_of_server):
                 def f(mu, m, h, lamda):
-                    return mu/(m*self.server_service_rate-mu)+h*(lamda - mu)+self.normalized_unit_depreciation_cost*(self.server_power_consumption*m+self.server_power_consumption/self.lamda_low*mu)
+                    return self.priority*(mu/(m*self.server_service_rate-mu)+h*(lamda - mu))+(1-self.priority)*(self.normalized_unit_depreciation_cost*(self.server_power_consumption*m+self.server_power_consumption/self.lamda_low*mu))
                 res = minimize_scalar(f, bounds=(0, min(lamda,m*self.server_service_rate)), args=((m, h, lamda)), method='bounded')
                 if res.fun < ans: 
                     ans = res.fun
