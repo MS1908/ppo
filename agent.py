@@ -1,4 +1,9 @@
-
+def set_seed(rand_seed):
+    set_global_seeds(100)
+    env.env_method('seed', rand_seed)
+    np.random.seed(rand_seed)
+    os.environ['PYTHONHASHSEED']=str(rand_seed)
+    model.set_random_seed(rand_seed)
 import gym
 import gym_offload_autoscale
 import numpy as np
@@ -16,7 +21,7 @@ env = gym.make('offload-autoscale-v0')
 env = DummyVecEnv([lambda: env])
 rand_seed = 1234
 model = PPO2(MlpPolicy, env, verbose=1, seed=rand_seed)
-model.learn(total_timesteps=100000)
+model.learn(total_timesteps=1000)
 # print(env.env_method('fixed_action_cal', 1000))
 # exit()
 rewards_list_ppo = []
@@ -31,12 +36,9 @@ rewards_list_fixed_2 = []
 avg_rewards_fixed_2 = []
 
 s = 2
-t_range = 10000
+t_range = 100
 
-set_global_seeds(100)
-env.env_method('seed', rand_seed)
-np.random.seed(rand_seed)
-os.environ['PYTHONHASHSEED']=str(rand_seed)
+set_seed(rand_seed)
 obs = env.reset()
 for i in range(t_range):
     action = env.env_method('myopic_action_cal')
@@ -45,10 +47,7 @@ for i in range(t_range):
     avg_rewards_myopic.append(np.mean(rewards_list_myopic[:]))
     if dones: env.reset()
 
-set_global_seeds(100)
-env.env_method('seed', rand_seed)
-np.random.seed(rand_seed)
-os.environ['PYTHONHASHSEED']=str(rand_seed)
+set_seed(rand_seed)
 obs = env.reset()
 for i in range(t_range):
     action = env.env_method('fixed_action_cal', 400)
@@ -57,10 +56,7 @@ for i in range(t_range):
     avg_rewards_fixed_1.append(np.mean(rewards_list_fixed_1[:]))
     if dones: env.reset()
 
-set_global_seeds(100)
-env.env_method('seed', rand_seed)
-np.random.seed(rand_seed)
-os.environ['PYTHONHASHSEED']=str(rand_seed)
+set_seed(rand_seed)
 obs = env.reset()
 for i in range(t_range):
     action = env.env_method('fixed_action_cal', 1000)
@@ -69,26 +65,17 @@ for i in range(t_range):
     avg_rewards_fixed_2.append(np.mean(rewards_list_fixed_2[:]))
     if dones: env.reset()
 
-set_global_seeds(100)
-env.env_method('seed', rand_seed)
-np.random.seed(rand_seed)
-os.environ['PYTHONHASHSEED']=str(rand_seed)
-os.environ['PYTHONHASHSEED']=str(rand_seed)
-model.set_random_seed(rand_seed)
+set_seed(rand_seed)
 obs = env.reset()
 for i in range(t_range):
-    action, _states = model.predict(obs, deterministic=True)
-    # action = np.random.uniform(0, 1, 1)
+    # action, _states = model.predict(obs, deterministic=True)
+    action = np.random.uniform(0, 1, 1)
     obs, rewards, dones, info = env.step(action)
     rewards_list_random.append(1 / rewards/ s)
     avg_rewards_random.append(np.mean(rewards_list_random[:]))
     if dones: env.reset()
 
-set_global_seeds(100)
-env.env_method('seed', rand_seed)
-np.random.seed(rand_seed)
-os.environ['PYTHONHASHSEED']=str(rand_seed)
-model.set_random_seed(rand_seed)
+set_seed(rand_seed)
 obs = env.reset()
 for i in range(t_range):
     action, _states = model.predict(obs, deterministic=True)
