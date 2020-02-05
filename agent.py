@@ -121,7 +121,7 @@ avg_rewards_bat_list_fixed_2 = []
 fixed_2_data = []
 
 s = 2
-t_range = 2000
+t_range = 10000
 
 set_seed(rand_seed)
 obs = env.reset()
@@ -225,7 +225,7 @@ def agent():
         step = 0
         while True:
             done = False
-            action = solver.act(state)
+            action = [solver.act(state)]
             next_state, reward, _, _ = env.step(action)
             next_state = np.reshape(next_state, [1, observation_space])
             step += 1
@@ -285,6 +285,10 @@ plt.plot( 'x', 'y_3', data=df, marker='s', markevery = int(t_range/10), color='c
 plt.plot( 'x', 'y_4', data=df, marker='*', markevery = int(t_range/10), color='skyblue', linewidth=1, label="fixed 0.4kW")
 plt.plot( 'x', 'y_5', data=df, marker='+', markevery = int(t_range/10), color='navy', linewidth=1, label="fixed 1kW")
 plt.plot( 'x', 'y_6', data=df, marker='x', markevery = int(t_range/10), color='green', linewidth=1, label="q learning")
+plt.grid()
+plt.ylim(0,20)
+plt.legend()
+plt.show()
 # =======
 
 # # plt.subplot(2,2,1)
