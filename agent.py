@@ -255,7 +255,7 @@ def agent():
         next_state = np.reshape(next_state, [1, observation_space])
         t, bak, bat = env.render()
         reward_list_dqn.append(1 / reward / s)
-        avg_reward_dqn.append(np.mean(dqn_reward_list[:]))
+        avg_reward_dqn.append(np.mean(reward_list_dqn[:]))
         rewards_time_list_dqn.append(t/s)
         avg_rewards_time_list_dqn.append(np.mean(rewards_time_list_dqn[:]))
         rewards_bak_list_dqn.append(bak/s)
@@ -284,7 +284,7 @@ agent()
 # print('{:15}{:<30}'.format('e', avg_rewards_energy_list_ppo[-1])1
 
 # myopic
-df=pd.DataFrame({'x': range(t_range), 'y_1': avg_rewards_ppo, 'y_2': avg_rewards_random, 'y_3': avg_rewards_myopic, 'y_4': avg_rewards_fixed_1, 'y_5': avg_rewards_fixed_2, 'y_6': avg_dqn_reward_list})
+df=pd.DataFrame({'x': range(t_range), 'y_1': avg_rewards_ppo, 'y_2': avg_rewards_random, 'y_3': avg_rewards_myopic, 'y_4': avg_rewards_fixed_1, 'y_5': avg_rewards_fixed_2, 'y_6': avg_reward_dqn})
 # df=pd.DataFrame({'x': range(t_range), 'y_1': avg_rewards_ppo, 'y_2': avg_rewards_random, 'y_3': avg_rewards_myopic, 'y_4': avg_rewards_fixed_1, 'y_5': avg_rewards_fixed_2})
 plt.xlabel("Time Slot")
 plt.ylabel("Time Average Cost")
