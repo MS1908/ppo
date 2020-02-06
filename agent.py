@@ -120,7 +120,7 @@ rewards_bat_list_fixed_2  = []
 avg_rewards_bat_list_fixed_2 = []
 fixed_2_data = []
 
-s = 2
+s = 1
 t_range = 10000
 
 set_seed(rand_seed)
@@ -140,11 +140,11 @@ for i in range(t_range):
     rewards_list_fixed_1.append(1 / rewards/ s)
     avg_rewards_fixed_1.append(np.mean(rewards_list_fixed_1[:]))
     t, bak, bat = env.render()
-    rewards_time_list_fixed_1.append(t)
+    rewards_time_list_fixed_1.append(t/s)
     avg_rewards_time_list_fixed_1.append(np.mean(rewards_time_list_fixed_1[:]))
-    rewards_bak_list_fixed_1.append(bak)
+    rewards_bak_list_fixed_1.append(bak/s)
     avg_rewards_bak_list_fixed_1.append(np.mean(rewards_bak_list_fixed_1[:]))
-    rewards_bat_list_fixed_1.append(bat)
+    rewards_bat_list_fixed_1.append(bat/s)
     avg_rewards_bat_list_fixed_1.append(np.mean(rewards_bat_list_fixed_1[:]))
     fixed_1_data.append([avg_rewards_time_list_fixed_1[-1], avg_rewards_bak_list_fixed_1[-1], avg_rewards_bat_list_fixed_1[-1]])
     if dones: env.reset()
@@ -157,11 +157,11 @@ for i in range(t_range):
     rewards_list_fixed_2.append(1 / rewards/ s)
     avg_rewards_fixed_2.append(np.mean(rewards_list_fixed_2[:]))
     t, bak, bat = env.render()
-    rewards_time_list_fixed_2.append(t)
+    rewards_time_list_fixed_2.append(t/s)
     avg_rewards_time_list_fixed_2.append(np.mean(rewards_time_list_fixed_2[:]))
-    rewards_bak_list_fixed_2.append(bak)
+    rewards_bak_list_fixed_2.append(bak/s)
     avg_rewards_bak_list_fixed_2.append(np.mean(rewards_bak_list_fixed_2[:]))
-    rewards_bat_list_fixed_2.append(bat)
+    rewards_bat_list_fixed_2.append(bat/s)
     avg_rewards_bat_list_fixed_2.append(np.mean(rewards_bat_list_fixed_2[:]))
     fixed_2_data.append([avg_rewards_time_list_fixed_2[-1], avg_rewards_bak_list_fixed_2[-1], avg_rewards_bat_list_fixed_2[-1]])
     if dones: env.reset()
@@ -174,11 +174,11 @@ for i in range(t_range):
     rewards_list_random.append(1 / rewards/ s)
     avg_rewards_random.append(np.mean(rewards_list_random[:]))
     t, bak, bat = env.render()
-    rewards_time_list_random.append(t)
+    rewards_time_list_random.append(t/s)
     avg_rewards_time_list_random.append(np.mean(rewards_time_list_random[:]))
-    rewards_bak_list_random.append(bak)
+    rewards_bak_list_random.append(bak/s)
     avg_rewards_bak_list_random.append(np.mean(rewards_bak_list_random[:]))
-    rewards_bat_list_random.append(bat)
+    rewards_bat_list_random.append(bat/s)
     avg_rewards_bat_list_random.append(np.mean(rewards_bat_list_random[:]))
     random_data.append([avg_rewards_time_list_random[-1], avg_rewards_bak_list_random[-1], avg_rewards_bat_list_random[-1]])
     if dones: env.reset()
@@ -192,18 +192,18 @@ for i in range(t_range):
     rewards_list_ppo.append(1 / rewards/ s)
     avg_rewards_ppo.append(np.mean(rewards_list_ppo[:]))
     t, bak, bat = env.render()
-    rewards_time_list_ppo.append(t)
+    rewards_time_list_ppo.append(t/s)
     avg_rewards_time_list_ppo.append(np.mean(rewards_time_list_ppo[:]))
-    rewards_bak_list_ppo.append(bak)
+    rewards_bak_list_ppo.append(bak/s)
     avg_rewards_bak_list_ppo.append(np.mean(rewards_bak_list_ppo[:]))
-    rewards_bat_list_ppo.append(bat)
+    rewards_bat_list_ppo.append(bat/s)
     avg_rewards_bat_list_ppo.append(np.mean(rewards_bat_list_ppo[:]))
     ppo_data.append([avg_rewards_time_list_ppo[-1], avg_rewards_bak_list_ppo[-1], avg_rewards_bat_list_ppo[-1]])
     if dones: env.reset()
     # env.render()
 
-dqn_reward_list = []
-avg_dqn_reward_list = []
+reward_list_dqn = []
+avg_reward_dqn = []
 rewards_time_list_dqn = []
 avg_rewards_time_list_dqn = []
 rewards_bak_list_dqn = []
@@ -211,7 +211,6 @@ avg_rewards_bak_list_dqn = []
 rewards_bat_list_dqn = []
 avg_rewards_bat_list_dqn = []
 dqn_data = []
-
 train_time_slots = 20000
 
 set_seed(rand_seed)
@@ -255,13 +254,13 @@ def agent():
         next_state, reward, _, _ = env.step(action)
         next_state = np.reshape(next_state, [1, observation_space])
         t, bak, bat = env.render()
-        dqn_reward_list.append(1 / reward / s)
-        avg_dqn_reward_list.append(np.mean(dqn_reward_list[:]))
-        rewards_time_list_dqn.append(t)
+        reward_list_dqn.append(1 / reward / s)
+        avg_reward_dqn.append(np.mean(dqn_reward_list[:]))
+        rewards_time_list_dqn.append(t/s)
         avg_rewards_time_list_dqn.append(np.mean(rewards_time_list_dqn[:]))
-        rewards_bak_list_dqn.append(bak)
+        rewards_bak_list_dqn.append(bak/s)
         avg_rewards_bak_list_dqn.append(np.mean(rewards_bak_list_dqn[:]))
-        rewards_bat_list_dqn.append(bat)
+        rewards_bat_list_dqn.append(bat/s)
         avg_rewards_bat_list_dqn.append(np.mean(rewards_bat_list_dqn[:]))
         dqn_data.append([avg_rewards_time_list_dqn[-1], avg_rewards_bak_list_dqn[-1], avg_rewards_bat_list_dqn[-1]])
 
