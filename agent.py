@@ -248,7 +248,7 @@ def agent():
         if terminal:
             break
 
-        for _ in (t_range):
+        for _ in range(t_range):
             action = solver.act(state)
             next_state, reward, _, _ = env.step(action)
             next_state = np.reshape(next_state, [1, observation_space])
