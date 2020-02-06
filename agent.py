@@ -212,7 +212,10 @@ rewards_bat_list_dqn = []
 avg_rewards_bat_list_dqn = []
 dqn_data = []
 
+train_time_slots = 20000
+
 def agent():
+    env = gym.make('offload-autoscale-v0')
     observation_space = env.observation_space.shape[0]
     action_space = env.action_space.shape[0]
     solver = DQNSolver(observation_space, action_space)
@@ -225,12 +228,30 @@ def agent():
         step = 0
         while True:
             done = False
-            action = [solver.act(state)]
+            action = solver.act(state)
             next_state, reward, _, _ = env.step(action)
             next_state = np.reshape(next_state, [1, observation_space])
             step += 1
             accumulated_step += 1
             # print('\tstate: ', state)
+            if step >= 96:
+                done = True
+            solver.remember(state, action, reward, next_state, done)
+            state = next_state
+            if done:
+                # episode += 1
+                break
+            solver.replay()
+            if accumulated_step == train_time_slots:
+                terminal = True
+                break
+        if terminal:
+            break
+
+        for _ in (t_range):
+            action = solver.act(state)
+            next_state, reward, _, _ = env.step(action)
+            next_state = np.reshape(next_state, [1, observation_space])
             t, bak, bat = env.render()
             dqn_reward_list.append(1 / reward / s)
             avg_dqn_reward_list.append(np.mean(dqn_reward_list[:]))
@@ -241,19 +262,6 @@ def agent():
             rewards_bat_list_dqn.append(bat)
             avg_rewards_bat_list_dqn.append(np.mean(rewards_bat_list_dqn[:]))
             dqn_data.append([avg_rewards_time_list_dqn[-1], avg_rewards_bak_list_dqn[-1], avg_rewards_bat_list_dqn[-1]])
-            if step >= 96:
-                done = True
-            solver.remember(state, action, reward, next_state, done)
-            state = next_state
-            if done:
-                # episode += 1
-                break
-            solver.replay()
-            if accumulated_step == t_range:
-                terminal = True
-                break
-        if terminal:
-            return
 
 agent()
 
@@ -285,9 +293,8 @@ plt.plot( 'x', 'y_3', data=df, marker='s', markevery = int(t_range/10), color='c
 plt.plot( 'x', 'y_4', data=df, marker='*', markevery = int(t_range/10), color='skyblue', linewidth=1, label="fixed 0.4kW")
 plt.plot( 'x', 'y_5', data=df, marker='+', markevery = int(t_range/10), color='navy', linewidth=1, label="fixed 1kW")
 plt.plot( 'x', 'y_6', data=df, marker='x', markevery = int(t_range/10), color='green', linewidth=1, label="q learning")
-plt.grid()
-plt.ylim(0,20)
 plt.legend()
+plt.grid()
 plt.show()
 # =======
 
