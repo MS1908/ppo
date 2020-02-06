@@ -248,20 +248,20 @@ def agent():
         if terminal:
             break
 
-        for _ in range(t_range):
-            action = solver.act(state)
-            next_state, reward, _, _ = env.step(action)
-            next_state = np.reshape(next_state, [1, observation_space])
-            t, bak, bat = env.render()
-            dqn_reward_list.append(1 / reward / s)
-            avg_dqn_reward_list.append(np.mean(dqn_reward_list[:]))
-            rewards_time_list_dqn.append(t)
-            avg_rewards_time_list_dqn.append(np.mean(rewards_time_list_dqn[:]))
-            rewards_bak_list_dqn.append(bak)
-            avg_rewards_bak_list_dqn.append(np.mean(rewards_bak_list_dqn[:]))
-            rewards_bat_list_dqn.append(bat)
-            avg_rewards_bat_list_dqn.append(np.mean(rewards_bat_list_dqn[:]))
-            dqn_data.append([avg_rewards_time_list_dqn[-1], avg_rewards_bak_list_dqn[-1], avg_rewards_bat_list_dqn[-1]])
+    for _ in range(t_range):
+        action = solver.act(state)
+        next_state, reward, _, _ = env.step(action)
+        next_state = np.reshape(next_state, [1, observation_space])
+        t, bak, bat = env.render()
+        dqn_reward_list.append(1 / reward / s)
+        avg_dqn_reward_list.append(np.mean(dqn_reward_list[:]))
+        rewards_time_list_dqn.append(t)
+        avg_rewards_time_list_dqn.append(np.mean(rewards_time_list_dqn[:]))
+        rewards_bak_list_dqn.append(bak)
+        avg_rewards_bak_list_dqn.append(np.mean(rewards_bak_list_dqn[:]))
+        rewards_bat_list_dqn.append(bat)
+        avg_rewards_bat_list_dqn.append(np.mean(rewards_bat_list_dqn[:]))
+        dqn_data.append([avg_rewards_time_list_dqn[-1], avg_rewards_bak_list_dqn[-1], avg_rewards_bat_list_dqn[-1]])
 
 agent()
 
