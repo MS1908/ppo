@@ -214,6 +214,8 @@ dqn_data = []
 
 train_time_slots = 20000
 
+set_seed(rand_seed)
+
 def agent():
     env = gym.make('offload-autoscale-v0')
     observation_space = env.observation_space.shape[0]
