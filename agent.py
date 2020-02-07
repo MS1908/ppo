@@ -47,7 +47,7 @@ class DQNSolver:
         for state, action, reward, next_state, terminal in batch:
             q_upd = reward
             if not terminal:
-                q_upd = (reward + 0.95 * np.amin(self.model.predict(next_state)[0]))
+                q_upd = (reward + 0.95 * np.amax(self.model.predict(next_state)[0]))
             q_val = self.model.predict(state)
             q_val[0][action] = q_upd
             self.model.fit(state, q_val, verbose=0)
