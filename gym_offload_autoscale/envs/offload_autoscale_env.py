@@ -7,7 +7,7 @@ from scipy.optimize import minimize_scalar
 
 class OffloadAutoscaleEnv(gym.Env):
     # metadata = {'render.modes': ['human']}
-    def __init__(self):
+    def __init__(self, p_coeff):
         self.timeslot = 0.25  # hours, ~15min
         self.batery_capacity = 2000  # Wh
         self.server_service_rate = 20  # units/sec
@@ -23,7 +23,7 @@ class OffloadAutoscaleEnv(gym.Env):
         self.back_up_cost_coef = 0.15
         self.normalized_unit_depreciation_cost = 0.01
         self.max_number_of_server = 15
-        self.priority_coefficent = 0.5
+        self.priority_coefficent = p_coeff
 
         # power model
         self.d_sta = 300

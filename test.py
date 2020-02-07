@@ -72,7 +72,7 @@ env = gym.make('offload-autoscale-v0', p_coeff=x)
 env = DummyVecEnv([lambda: env])
 rand_seed = 1234
 model = PPO2(MlpPolicy, env, verbose=1, seed=rand_seed)
-model.learn(total_timesteps=100000)
+model.learn(total_timesteps=1000)
 
 rewards_list_ppo = []
 avg_rewards_ppo = []
@@ -125,7 +125,7 @@ avg_rewards_bat_list_fixed_2 = []
 fixed_2_data = []
 
 s = 1
-t_range = 10000
+t_range = 100
 
 set_seed(rand_seed)
 obs = env.reset()
@@ -223,7 +223,7 @@ avg_rewards_bak_list_dqn = []
 rewards_bat_list_dqn = []
 avg_rewards_bat_list_dqn = []
 dqn_data = []
-train_time_slots = 20000
+train_time_slots = 200
 
 set_seed(rand_seed)
 
