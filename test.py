@@ -4,7 +4,7 @@ import random
 import numpy as np
 import pandas as pd
 import os
-my_path = os.path.abspath('res')
+my_path = os.path.abspath('test.res')
 import matplotlib.pyplot as plt
 import time
 import openpyxl
@@ -82,6 +82,7 @@ rewards_bak_list_ppo  = []
 avg_rewards_bak_list_ppo = []
 rewards_bat_list_ppo  = []
 avg_rewards_bat_list_ppo = []
+avg_rewards_energy_list_ppo = []
 ppo_data = []
 
 rewards_list_random = []
@@ -92,6 +93,7 @@ rewards_bak_list_random  = []
 avg_rewards_bak_list_random = []
 rewards_bat_list_random  = []
 avg_rewards_bat_list_random = []
+avg_rewards_energy_list_random = []
 random_data = []
 
 rewards_list_myopic = []
@@ -102,6 +104,7 @@ rewards_bak_list_myopic  = []
 avg_rewards_bak_list_myopic = []
 rewards_bat_list_myopic  = []
 avg_rewards_bat_list_myopic = []
+avg_rewards_energy_list_myopic = []
 myopic_data = []
 
 rewards_list_fixed_1 = []
@@ -112,6 +115,7 @@ rewards_bak_list_fixed_1  = []
 avg_rewards_bak_list_fixed_1 = []
 rewards_bat_list_fixed_1  = []
 avg_rewards_bat_list_fixed_1 = []
+avg_rewards_energy_list_fixed_1 = []
 fixed_1_data = []
 
 rewards_list_fixed_2 = []
@@ -122,6 +126,7 @@ rewards_bak_list_fixed_2  = []
 avg_rewards_bak_list_fixed_2 = []
 rewards_bat_list_fixed_2  = []
 avg_rewards_bat_list_fixed_2 = []
+avg_rewards_energy_list_fixed_2 = []
 fixed_2_data = []
 
 s = 1
@@ -141,6 +146,7 @@ for i in range(t_range):
     avg_rewards_bak_list_myopic.append(np.mean(rewards_bak_list_myopic[:]))
     rewards_bat_list_myopic.append(bat/s)
     avg_rewards_bat_list_myopic.append(np.mean(rewards_bat_list_myopic[:]))
+    avg_rewards_energy_list_myopic.append(avg_rewards_bak_list_myopic[-1]+avg_rewards_bat_list_myopic[-1])
     myopic_data.append([avg_rewards_time_list_myopic[-1], avg_rewards_bak_list_myopic[-1], avg_rewards_bat_list_myopic[-1]])
     if dones: env.reset()
 
@@ -158,6 +164,7 @@ for i in range(t_range):
     avg_rewards_bak_list_fixed_1.append(np.mean(rewards_bak_list_fixed_1[:]))
     rewards_bat_list_fixed_1.append(bat/s)
     avg_rewards_bat_list_fixed_1.append(np.mean(rewards_bat_list_fixed_1[:]))
+    avg_rewards_energy_list_fixed_1.append(avg_rewards_bak_list_fixed_1[-1]+avg_rewards_bat_list_fixed_1[-1])
     fixed_1_data.append([avg_rewards_time_list_fixed_1[-1], avg_rewards_bak_list_fixed_1[-1], avg_rewards_bat_list_fixed_1[-1]])
     if dones: env.reset()
 
@@ -175,6 +182,7 @@ for i in range(t_range):
     avg_rewards_bak_list_fixed_2.append(np.mean(rewards_bak_list_fixed_2[:]))
     rewards_bat_list_fixed_2.append(bat/s)
     avg_rewards_bat_list_fixed_2.append(np.mean(rewards_bat_list_fixed_2[:]))
+    avg_rewards_energy_list_fixed_2.append(avg_rewards_bak_list_fixed_2[-1]+avg_rewards_bat_list_fixed_2[-1])
     fixed_2_data.append([avg_rewards_time_list_fixed_2[-1], avg_rewards_bak_list_fixed_2[-1], avg_rewards_bat_list_fixed_2[-1]])
     if dones: env.reset()
 
@@ -192,6 +200,7 @@ for i in range(t_range):
     avg_rewards_bak_list_random.append(np.mean(rewards_bak_list_random[:]))
     rewards_bat_list_random.append(bat/s)
     avg_rewards_bat_list_random.append(np.mean(rewards_bat_list_random[:]))
+    avg_rewards_energy_list_random.append(avg_rewards_bak_list_random[-1]+avg_rewards_bat_list_random[-1])
     random_data.append([avg_rewards_time_list_random[-1], avg_rewards_bak_list_random[-1], avg_rewards_bat_list_random[-1]])
     if dones: env.reset()
 
@@ -210,6 +219,7 @@ for i in range(t_range):
     avg_rewards_bak_list_ppo.append(np.mean(rewards_bak_list_ppo[:]))
     rewards_bat_list_ppo.append(bat/s)
     avg_rewards_bat_list_ppo.append(np.mean(rewards_bat_list_ppo[:]))
+    avg_rewards_energy_list_ppo.append(avg_rewards_bak_list_ppo[-1]+avg_rewards_bat_list_ppo[-1])
     ppo_data.append([avg_rewards_time_list_ppo[-1], avg_rewards_bak_list_ppo[-1], avg_rewards_bat_list_ppo[-1]])
     if dones: env.reset()
     # env.render()
@@ -222,6 +232,7 @@ rewards_bak_list_dqn = []
 avg_rewards_bak_list_dqn = []
 rewards_bat_list_dqn = []
 avg_rewards_bat_list_dqn = []
+avg_rewards_energy_list_dqn = []
 dqn_data = []
 train_time_slots = 200
 
@@ -274,21 +285,23 @@ def agent():
         avg_rewards_bak_list_dqn.append(np.mean(rewards_bak_list_dqn[:]))
         rewards_bat_list_dqn.append(bat/s)
         avg_rewards_bat_list_dqn.append(np.mean(rewards_bat_list_dqn[:]))
+        avg_rewards_energy_list_dqn.append(avg_rewards_bak_list_dqn[-1]+avg_rewards_bat_list_dqn[-1])
         dqn_data.append([avg_rewards_time_list_dqn[-1], avg_rewards_bak_list_dqn[-1], avg_rewards_bat_list_dqn[-1]])
 
 agent()
 
 print('--RESULTS--')
-print('{:15}{:30}'.format('method','time average cost'))
-print('{:15}{:<30}'.format('PPO', avg_rewards_ppo[-1]))
-print('{:15}{:<30}'.format('random',avg_rewards_random[-1]))
-print('{:15}{:<30}'.format('myopic',avg_rewards_myopic[-1]))
-print('{:15}{:<30}'.format('fixed 0.4kW',avg_rewards_fixed_1[-1]))
-print('{:15}{:<30}'.format('fixed 1kW',avg_rewards_fixed_2[-1]))
-print('{:15}{:<30}'.format('dqn',avg_rewards_dqn[-1]))
+print('{:15}{:30}{:10}{:10}{:10}'.format('method','total cost','time','bak','bat'))
+print('{:15}{:<30}{:<10.5}{:<10.5}{:<10.5}'.format('PPO', avg_rewards_ppo[-1], avg_rewards_time_list_ppo[-1], avg_rewards_bak_list_ppo[-1], avg_rewards_bat_list_ppo[-1]))
+print('{:15}{:<30}{:<10.5}{:<10.5}{:<10.5}'.format('random',avg_rewards_random[-1], avg_rewards_time_list_random[-1] ,avg_rewards_bak_list_random[-1], avg_rewards_bat_list_random[-1]))
+print('{:15}{:<30}{:<10.5}{:<10.5}{:<10.5}'.format('myopic',avg_rewards_myopic[-1], avg_rewards_time_list_myopic[-1], avg_rewards_bak_list_myopic[-1], avg_rewards_bat_list_myopic[-1]))
+print('{:15}{:<30}{:<10.5}{:<10.5}{:<10.5}'.format('fixed 0.4kW',avg_rewards_fixed_1[-1], avg_rewards_time_list_fixed_1[-1], avg_rewards_bak_list_fixed_1[-1], avg_rewards_bat_list_fixed_1[-1]))
+print('{:15}{:<30}{:<10.5}{:<10.5}{:<10.5}'.format('fixed 1kW',avg_rewards_fixed_2[-1], avg_rewards_time_list_fixed_2[-1], avg_rewards_bak_list_fixed_2[-1], avg_rewards_bat_list_fixed_2[-1]))
+print('{:15}{:<30}{:<10.5}{:<10.5}{:<10.5}'.format('dqn',avg_rewards_dqn[-1], avg_rewards_time_list_dqn[-1], avg_rewards_bak_list_dqn[-1], avg_rewards_bat_list_dqn[-1]))
+end_time = time.time()
+print('elapsed time:', end_time-start_time)  
 
-
-
+#total cost
 df=pd.DataFrame({'x': range(t_range), 'y_1': avg_rewards_ppo, 'y_2': avg_rewards_random, 'y_3': avg_rewards_myopic, 'y_4': avg_rewards_fixed_1, 'y_5': avg_rewards_fixed_2, 'y_6': avg_rewards_dqn})
 plt.xlabel("Time Slot")
 plt.ylabel("Time Average Cost")
@@ -300,100 +313,167 @@ plt.plot('x', 'y_5', data=df, marker='+', markevery = int(t_range/10), color='na
 plt.plot('x', 'y_6', data=df, marker='x', markevery = int(t_range/10), color='green', linewidth=1, label="q learning")
 plt.legend()
 plt.grid()
-my_file = 'avg_p='+str(x)+'_.xlsx'
+my_file = 'p='+str(x)+'/avg_total_p='+str(x)+'_.xlsx'
 export_excel = df.to_excel (os.path.join(my_path, my_file), index = None, header=True)
-my_file = 'avg_p='+str(x)+'_.png'
+my_file = 'p='+str(x)+'/avg_total_p='+str(x)+'_.png'
+plt.savefig(os.path.join(my_path, my_file))
+plt.show()
+#time cost
+dft=pd.DataFrame({'x': range(t_range), 'y_1': avg_rewards_time_list_ppo, 'y_2': avg_rewards_time_list_random, 'y_3': avg_rewards_time_list_myopic, 'y_4': avg_rewards_time_list_fixed_1, 'y_5': avg_rewards_time_list_fixed_2, 'y_6': avg_rewards_time_list_dqn})
+plt.xlabel("Time Slot")
+plt.ylabel("Time Average Delay Cost")
+plt.plot('x', 'y_1', data=dft, marker='o', markevery = int(t_range/10), color='red', linewidth=1, label="ppo")
+plt.plot('x', 'y_2', data=dft, marker='^', markevery = int(t_range/10), color='olive', linewidth=1, label="random")
+plt.plot('x', 'y_3', data=dft, marker='s', markevery = int(t_range/10), color='cyan', linewidth=1, label="myopic")
+plt.plot('x', 'y_4', data=dft, marker='*', markevery = int(t_range/10), color='skyblue', linewidth=1, label="fixed 0.4kW")
+plt.plot('x', 'y_5', data=dft, marker='+', markevery = int(t_range/10), color='navy', linewidth=1, label="fixed 1kW")
+plt.plot('x', 'y_6', data=dft, marker='x', markevery = int(t_range/10), color='green', linewidth=1, label="q learning")
+plt.legend()
+plt.grid()
+my_file = 'p='+str(x)+'/avg_time_p='+str(x)+'_.xlsx'
+export_excel = dft.to_excel (os.path.join(my_path, my_file), index = None, header=True)
+my_file = 'p='+str(x)+'/avg_time_p='+str(x)+'_.png'
+plt.savefig(os.path.join(my_path, my_file))
+plt.show()
+#bak-up cost
+dfbak=pd.DataFrame({'x': range(t_range), 'y_1': avg_rewards_bak_list_ppo, 'y_2': avg_rewards_bak_list_random, 'y_3': avg_rewards_bak_list_myopic, 'y_4': avg_rewards_bak_list_fixed_1, 'y_5': avg_rewards_bak_list_fixed_2, 'y_6': avg_rewards_bak_list_dqn})
+plt.xlabel("Time Slot")
+plt.ylabel("Time Average Back-up Power Cost")
+plt.plot('x', 'y_1', data=dfbak, marker='o', markevery = int(t_range/10), color='red', linewidth=1, label="ppo")
+plt.plot('x', 'y_2', data=dfbak, marker='^', markevery = int(t_range/10), color='olive', linewidth=1, label="random")
+plt.plot('x', 'y_3', data=dfbak, marker='s', markevery = int(t_range/10), color='cyan', linewidth=1, label="myopic")
+plt.plot('x', 'y_4', data=dfbak, marker='*', markevery = int(t_range/10), color='skyblue', linewidth=1, label="fixed 0.4kW")
+plt.plot('x', 'y_5', data=dfbak, marker='+', markevery = int(t_range/10), color='navy', linewidth=1, label="fixed 1kW")
+plt.plot('x', 'y_6', data=dfbak, marker='x', markevery = int(t_range/10), color='green', linewidth=1, label="q learning")
+plt.legend()
+plt.grid()
+my_file = 'p='+str(x)+'/avg_backup_p='+str(x)+'_.xlsx'
+export_excel = dfbak.to_excel (os.path.join(my_path, my_file), index = None, header=True)
+my_file = 'p='+str(x)+'/avg_backup_p='+str(x)+'_.png'
+plt.savefig(os.path.join(my_path, my_file))
+plt.show()
+#battery cost
+dfbat=pd.DataFrame({'x': range(t_range), 'y_1': avg_rewards_bat_list_ppo, 'y_2': avg_rewards_bat_list_random, 'y_3': avg_rewards_bat_list_myopic, 'y_4': avg_rewards_bat_list_fixed_1, 'y_5': avg_rewards_bat_list_fixed_2, 'y_6': avg_rewards_bat_list_dqn})
+plt.xlabel("Time Slot")
+plt.ylabel("Time Average Battery Cost")
+plt.plot('x', 'y_1', data=dfbat, marker='o', markevery = int(t_range/10), color='red', linewidth=1, label="ppo")
+plt.plot('x', 'y_2', data=dfbat, marker='^', markevery = int(t_range/10), color='olive', linewidth=1, label="random")
+plt.plot('x', 'y_3', data=dfbat, marker='s', markevery = int(t_range/10), color='cyan', linewidth=1, label="myopic")
+plt.plot('x', 'y_4', data=dfbat, marker='*', markevery = int(t_range/10), color='skyblue', linewidth=1, label="fixed 0.4kW")
+plt.plot('x', 'y_5', data=dfbat, marker='+', markevery = int(t_range/10), color='navy', linewidth=1, label="fixed 1kW")
+plt.plot('x', 'y_6', data=dfbat, marker='x', markevery = int(t_range/10), color='green', linewidth=1, label="q learning")
+plt.legend()
+plt.grid()
+my_file = 'p='+str(x)+'/avg_battery_p='+str(x)+'_.xlsx'
+export_excel = dfbat.to_excel (os.path.join(my_path, my_file), index = None, header=True)
+my_file = 'p='+str(x)+'/avg_battery_p='+str(x)+'_.png'
+plt.savefig(os.path.join(my_path, my_file))
+plt.show()
+#energy cost
+dfe=pd.DataFrame({'x': range(t_range), 'y_1': avg_rewards_energy_list_ppo, 'y_2': avg_rewards_energy_list_random, 'y_3': avg_rewards_energy_list_myopic, 'y_4': avg_rewards_energy_list_fixed_1, 'y_5': avg_rewards_energy_list_fixed_2, 'y_6': avg_rewards_energy_list_dqn})
+plt.xlabel("Time Slot")
+plt.ylabel("Time Average Energy Cost")
+plt.plot('x', 'y_1', data=dfe, marker='o', markevery = int(t_range/10), color='red', linewidth=1, label="ppo")
+plt.plot('x', 'y_2', data=dfe, marker='^', markevery = int(t_range/10), color='olive', linewidth=1, label="random")
+plt.plot('x', 'y_3', data=dfe, marker='s', markevery = int(t_range/10), color='cyan', linewidth=1, label="myopic")
+plt.plot('x', 'y_4', data=dfe, marker='*', markevery = int(t_range/10), color='skyblue', linewidth=1, label="fixed 0.4kW")
+plt.plot('x', 'y_5', data=dfe, marker='+', markevery = int(t_range/10), color='navy', linewidth=1, label="fixed 1kW")
+plt.plot('x', 'y_6', data=dfe, marker='x', markevery = int(t_range/10), color='green', linewidth=1, label="q learning")
+plt.legend()
+plt.grid()
+my_file = 'p='+str(x)+'/avg_energy_p='+str(x)+'_.xlsx'
+export_excel = dfe.to_excel (os.path.join(my_path, my_file), index = None, header=True)
+my_file = 'p='+str(x)+'/avg_energy_p='+str(x)+'_.png'
 plt.savefig(os.path.join(my_path, my_file))
 plt.show()
 
-df1 = pd.DataFrame(ppo_data, columns=['delay cost', 'back-up power cost', 'battery cost'])
-df1.plot.area()
-# plt.plot(range(t_range), avg_rewards_ppo)
-plt.grid()
-plt.ylim(0,20)
-plt.title('PPO')
-plt.legend()
-plt.xlabel("Time Slot")
-plt.ylabel("Time Average Cost")
-my_file = 'ppo_p='+str(x)+'_.xlsx'
-export_excel = df.to_excel (os.path.join(my_path, my_file), index = None, header=True)
-my_file = 'ppo_p='+str(x)+'_.png'
-plt.savefig(os.path.join(my_path, my_file))
-plt.show()
+# df1 = pd.DataFrame(ppo_data, columns=['delay cost', 'back-up power cost', 'battery cost'])
+# df1.plot.area()
+# # plt.plot(range(t_range), avg_rewards_ppo)
+# plt.grid()
+# plt.ylim(0,20)
+# plt.title('PPO')
+# plt.legend()
+# plt.xlabel("Time Slot")
+# plt.ylabel("Time Average Cost")
+# my_file = 'ppo_p='+str(x)+'_.xlsx'
+# export_excel = df1.to_excel (os.path.join(my_path, my_file), index = None, header=True)
+# my_file = 'ppo_p='+str(x)+'_.png'
+# plt.savefig(os.path.join(my_path, my_file))
+# plt.show()
 
-df2 = pd.DataFrame(random_data, columns=['delay cost', 'back-up power cost', 'battery cost'])
-df2.plot.area()
-# plt.plot(range(t_range), avg_rewards_random)
-plt.grid()
-plt.ylim(0,20)
-plt.title('random')
-plt.legend()
-plt.xlabel("Time Slot")
-plt.ylabel("Time Average Cost")
-my_file = 'random_p='+str(x)+'_.xlsx'
-export_excel = df.to_excel (os.path.join(my_path, my_file), index = None, header=True)
-my_file = 'random_p='+str(x)+'_.png'
-plt.savefig(os.path.join(my_path, my_file))
-plt.show()
+# df2 = pd.DataFrame(random_data, columns=['delay cost', 'back-up power cost', 'battery cost'])
+# df2.plot.area()
+# # plt.plot(range(t_range), avg_rewards_random)
+# plt.grid()
+# plt.ylim(0,20)
+# plt.title('random')
+# plt.legend()
+# plt.xlabel("Time Slot")
+# plt.ylabel("Time Average Cost")
+# my_file = 'random_p='+str(x)+'_.xlsx'
+# export_excel = df2.to_excel (os.path.join(my_path, my_file), index = None, header=True)
+# my_file = 'random_p='+str(x)+'_.png'
+# plt.savefig(os.path.join(my_path, my_file))
+# plt.show()
 
-df3 = pd.DataFrame(myopic_data , columns=['delay cost', 'back-up power cost', 'battery cost'])
-df3.plot.area()
-# plt.plot(range(t_range), avg_rewards_myopic)
-plt.grid()
-plt.ylim(0,20)
-plt.title('myopic')
-plt.legend()
-plt.xlabel("Time Slot")
-plt.ylabel("Time Average Cost")
-my_file = 'myopic_p='+str(x)+'_.xlsx'
-export_excel = df.to_excel (os.path.join(my_path, my_file), index = None, header=True)
-my_file = 'myopic_p='+str(x)+'_.png'
-plt.savefig(os.path.join(my_path, my_file))
-plt.show()
+# df3 = pd.DataFrame(myopic_data , columns=['delay cost', 'back-up power cost', 'battery cost'])
+# df3.plot.area()
+# # plt.plot(range(t_range), avg_rewards_myopic)
+# plt.grid()
+# plt.ylim(0,20)
+# plt.title('myopic')
+# plt.legend()
+# plt.xlabel("Time Slot")
+# plt.ylabel("Time Average Cost")
+# my_file = 'myopic_p='+str(x)+'_.xlsx'
+# export_excel = df3.to_excel (os.path.join(my_path, my_file), index = None, header=True)
+# my_file = 'myopic_p='+str(x)+'_.png'
+# plt.savefig(os.path.join(my_path, my_file))
+# plt.show()
 
-df4 = pd.DataFrame(fixed_1_data, columns=['delay cost', 'back-up power cost', 'battery cost'])
-df4.plot.area()
-# plt.plot(range(t_range), avg_rewards_fixed_1)
-plt.grid()
-plt.ylim(0,20)
-plt.title('fixed 0.4 kW')
-plt.legend()
-plt.xlabel("Time Slot")
-plt.ylabel("Time Average Cost")
-my_file = '04_p='+str(x)+'_.xlsx'
-export_excel = df.to_excel (os.path.join(my_path, my_file), index = None, header=True)
-my_file = '04_p='+str(x)+'_.png'
-plt.savefig(os.path.join(my_path, my_file))
-plt.show()
+# df4 = pd.DataFrame(fixed_1_data, columns=['delay cost', 'back-up power cost', 'battery cost'])
+# df4.plot.area()
+# # plt.plot(range(t_range), avg_rewards_fixed_1)
+# plt.grid()
+# plt.ylim(0,20)
+# plt.title('fixed 0.4 kW')
+# plt.legend()
+# plt.xlabel("Time Slot")
+# plt.ylabel("Time Average Cost")
+# my_file = '04_p='+str(x)+'_.xlsx'
+# export_excel = df4.to_excel (os.path.join(my_path, my_file), index = None, header=True)
+# my_file = '04_p='+str(x)+'_.png'
+# plt.savefig(os.path.join(my_path, my_file))
+# plt.show()
 
-df5 = pd.DataFrame(fixed_2_data, columns=['delay cost', 'back-up power cost', 'battery cost'])
-df5.plot.area()
-# plt.plot(range(t_range), avg_rewards_fixed_2)
-plt.grid()
-plt.ylim(0,20)
-plt.title('fixed 1 kW')
-plt.legend()
-plt.xlabel("Time Slot")
-plt.ylabel("Time Average Cost")
-my_file = '1_p='+str(x)+'_.xlsx'
-export_excel = df.to_excel (os.path.join(my_path, my_file), index = None, header=True)
-my_file = '1_p='+str(x)+'_.png'
-plt.savefig(os.path.join(my_path, my_file))
-plt.show()
+# df5 = pd.DataFrame(fixed_2_data, columns=['delay cost', 'back-up power cost', 'battery cost'])
+# df5.plot.area()
+# # plt.plot(range(t_range), avg_rewards_fixed_2)
+# plt.grid()
+# plt.ylim(0,20)
+# plt.title('fixed 1 kW')
+# plt.legend()
+# plt.xlabel("Time Slot")
+# plt.ylabel("Time Average Cost")
+# my_file = '1_p='+str(x)+'_.xlsx'
+# export_excel = df5.to_excel (os.path.join(my_path, my_file), index = None, header=True)
+# my_file = '1_p='+str(x)+'_.png'
+# plt.savefig(os.path.join(my_path, my_file))
+# plt.show()
 
-df6 = pd.DataFrame(dqn_data, columns=['delay cost', 'back-up power cost', 'battery cost'])
-df6.plot.area()
-# plt.plot(range(t_range), avg_rewards_dqn)
-plt.grid()
-plt.ylim(0,20)
-plt.title('q-learning')
-plt.legend()
-plt.xlabel("Time Slot")
-plt.ylabel("Time Average Cost")
-my_file = 'dqn_p='+str(x)+'_.xlsx'
-export_excel = df.to_excel (os.path.join(my_path, my_file), index = None, header=True)
-my_file = 'dqn_p='+str(x)+'_.png'
-plt.savefig(os.path.join(my_path, my_file))
-plt.show()
-end_time = time.time()
-print('elapsed time:', end_time-start_time)       
+# df6 = pd.DataFrame(dqn_data, columns=['delay cost', 'back-up power cost', 'battery cost'])
+# df6.plot.area()
+# # plt.plot(range(t_range), avg_rewards_dqn)
+# plt.grid()
+# plt.ylim(0,20)
+# plt.title('q-learning')
+# plt.legend()
+# plt.xlabel("Time Slot")
+# plt.ylabel("Time Average Cost")
+# my_file = 'dqn_p='+str(x)+'_.xlsx'
+# export_excel = df6.to_excel (os.path.join(my_path, my_file), index = None, header=True)
+# my_file = 'dqn_p='+str(x)+'_.png'
+# plt.savefig(os.path.join(my_path, my_file))
+# plt.show()
+     
