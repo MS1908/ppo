@@ -166,13 +166,13 @@ class OffloadAutoscaleEnv(gym.Env):
         else:
             cost_batery = self.normalized_unit_depreciation_cost * np.maximum(self.d - self.g, 0)
             cost_bak = 0
-        cost_bak = cost_bak * self.priority_coefficent
-        cost_batery = cost_batery * self.priority_coefficent
-        cost_delay = cost_delay * (1 - self.priority_coefficent)
-        self.reward_bak = cost_bak
-        self.reward_bat = cost_batery
-        self.reward_time = cost_delay
-        cost = cost_delay + cost_batery + cost_bak
+        self.unscaled_reward_bak = cost_bak
+        self.unscaled_reward_bat = cost_batery
+        self.unscaled_reward_time = cost_delay
+        self.reward_bak = cost_bak * self.priority_coefficent
+        self.reward_bat = cost_batery * self.priority_coefficent
+        self.reward_time = cost_delay * (1 - self.priority_coefficent)
+        cost = self.reward_bak + self.reward_bat + self.reward_time
         # cost_delay_local = self.cost_delay_local_function(self.m, self.mu)
         # cost_delay_cloud = self.cost_delay_cloud_function(self.mu, h, lamda)
         # print('\t{:20} {:20} {:20} {:10}'.format("cost_delay_local", "cost_delay_cloud", "cost_batery", "cost_bak"))
@@ -220,7 +220,7 @@ class OffloadAutoscaleEnv(gym.Env):
         # print('{:>7} {:>7} {:>7} {:>7} {:>4} {:>7} {:>7} {:>7} {:>4} {:>4}'.format("g", "d_op", "d_com", "d", "m", "mu", "lamd_t+1","b_t+1", "h_t+1", "e_t+1"))
         # print('{:7.2f} {:7.2f} {:7.2f} {:7.2f} {:4} {:7.2f} {:8.2f} {:7.2f} {:5.2f} {:5.0f}'.format(self.g,self.d_op, self.d_com,self.d,self.m,self.mu, self.state[0],self.state[1],self.state[2],self.state[3]))
         # return self.state[0],self.state[1],self.state[2],self.state[3],self.g,self.d_op, self.d_com,self.d,self.m,self.mu
-        return  self.reward_time, self.reward_bak, self.reward_bat
+        return  self.reward_time, self.reward_bak, self.reward_bat, self.unscaled_reward_time, self.unscaled_reward_bak, self.unscaled_reward_bat
     def fixed_action_cal(self, fixed_action):
         lamda, b, h, _ = self.state
         d_op = self.get_dop()
