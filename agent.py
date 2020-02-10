@@ -341,7 +341,27 @@ print('{:5}{:<30}{:<10.5}{:<10.5}{:<10.5}{:<10.5}'.format('0.5', total_cost[2], 
 print('{:5}{:<30}{:<10.5}{:<10.5}{:<10.5}{:<10.5}'.format('0.75', total_cost[3], time_cost[3], energy_cost[3], unscaled_time_cost[3], unscaled_energy_cost[3]))
 print('{:5}{:<30}{:<10.5}{:<10.5}{:<10.5}{:<10.5}'.format('1', total_cost[4], time_cost[4], energy_cost[4], unscaled_time_cost[4], unscaled_energy_cost[4]))
 end_time = time.time()
-print('elapsed time:', end_time-start_time)  
+print('elapsed time:', end_time-start_time) 
+x_range = [x / 4 for x in range(5)]
+fig, ax1 = plt.subplots()
+color = 'tab:red'
+ax1.set_xlabel('Coefficient')
+ax1.set_ylabel('Delay time Cost', color=color)
+ax1.plot(x_range, unscaled_time_cost, color=color, marker='o', label='Delay time Cost')
+ax1.tick_params(axis='y', labelcolor=color)
+
+ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+
+color = 'tab:blue'
+ax2.set_ylabel('Energy Cost', color=color)  # we already handled the x-label with ax1
+ax2.plot(x_range, unscaled_energy_cost, color=color, marker='o', label = 'Energy Cost')
+ax2.tick_params(axis='y', labelcolor=color)
+
+fig.tight_layout()  # otherwise the right y-label is slightly clipped
+my_file = 'compare_p/time-energy.png'
+plt.savefig(os.path.join(my_path, my_file))
+plt.grid()
+plt.show() 
 # #total cost
 # df=pd.DataFrame({'x': range(t_range), 'y_1': avg_rewards_ppo, 'y_2': avg_rewards_random, 'y_3': avg_rewards_myopic, 'y_4': avg_rewards_fixed_1, 'y_5': avg_rewards_fixed_2, 'y_6': avg_rewards_dqn})
 # plt.xlabel("Time Slot")
