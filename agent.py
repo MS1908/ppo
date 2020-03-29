@@ -146,7 +146,7 @@ avg_rewards_bat_list_dqn = []
 avg_rewards_energy_list_dqn = []
 dqn_data = []
 train_time_slots = 20000
-t_range = 10000
+t_range = 2000
 
 
 
