@@ -401,7 +401,13 @@ plt.show()
 #ppo area chart
 plt.xlabel("Time Slot")
 plt.ylabel("Average Costs")
-plt.stackplot(range(t_range), avg_rewards_ppo, avg_rewards_time_list_ppo, avg_rewards_bak_list_ppo, avg_rewards_bat_list_ppo, avg_rewards_energy_list_ppo, labels = ['Avg cost', 'Delay cost', 'Backup cost', 'Battery cost', 'Energy cost'])
+xx = range(t_range)
+yy = [avg_rewards_time_list_ppo, avg_rewards_bak_list_ppo, avg_rewards_bat_list_ppo]
+fig = plt.stackplot(xx, yy, colors = 'w', edgecolor = 'black', labels = ['Delay cost', 'Backup cost', 'Battery cost'])
+hatches = ['o', '/', 'x']
+for s, h in zip(fig, hatches):
+    s.set_hatch(h)
+plt.title('PPO')
 plt.legend()
 plt.grid()
 my_file = 'p='+str(x)+'/ppo_area='+str(x)+'_.png'
@@ -410,7 +416,13 @@ plt.show()
 #random area chart
 plt.xlabel("Time Slot")
 plt.ylabel("Average Costs")
-plt.stackplot(range(t_range), avg_rewards_random, avg_rewards_time_list_random, avg_rewards_bak_list_random, avg_rewards_bat_list_random, avg_rewards_energy_list_random, labels = ['Avg cost', 'Delay cost', 'Backup cost', 'Battery cost', 'Energy cost'])
+xx = range(t_range)
+yy = [avg_rewards_time_list_random, avg_rewards_bak_list_random, avg_rewards_bat_list_random]
+fig = plt.stackplot(xx, yy, colors = 'w', edgecolor = 'black', labels = ['Delay cost', 'Backup cost', 'Battery cost'])
+hatches = ['o', '/', 'x']
+for s, h in zip(fig, hatches):
+    s.set_hatch(h)
+plt.title('Random')
 plt.legend()
 plt.grid()
 my_file = 'p='+str(x)+'/random_area='+str(x)+'_.png'
@@ -419,7 +431,13 @@ plt.show()
 #myopic area chart
 plt.xlabel("Time Slot")
 plt.ylabel("Average Costs")
-plt.stackplot(range(t_range), avg_rewards_myopic, avg_rewards_time_list_myopic, avg_rewards_bak_list_myopic, avg_rewards_bat_list_myopic, avg_rewards_energy_list_myopic, labels = ['Avg cost', 'Delay cost', 'Backup cost', 'Battery cost', 'Energy cost'])
+xx = range(t_range)
+yy = [avg_rewards_time_list_myopic, avg_rewards_bak_list_myopic, avg_rewards_bat_list_myopic]
+fig = plt.stackplot(xx, yy, colors = 'w', edgecolor = 'black', labels = ['Delay cost', 'Backup cost', 'Battery cost'])
+hatches = ['o', '/', 'x']
+for s, h in zip(fig, hatches):
+    s.set_hatch(h)
+plt.title('Myopic')
 plt.legend()
 plt.grid()
 my_file = 'p='+str(x)+'/myopic_area='+str(x)+'_.png'
@@ -428,7 +446,13 @@ plt.show()
 #fixed 0.4kW area chart
 plt.xlabel("Time Slot")
 plt.ylabel("Average Costs")
-plt.stackplot(range(t_range), avg_rewards_fixed_1, avg_rewards_time_list_fixed_1, avg_rewards_bak_list_fixed_1, avg_rewards_bat_list_fixed_1, avg_rewards_energy_list_fixed_1, labels = ['Avg cost', 'Delay cost', 'Backup cost', 'Battery cost', 'Energy cost'])
+xx = range(t_range)
+yy = [avg_rewards_time_list_fixed_1, avg_rewards_bak_list_fixed_1, avg_rewards_bat_list_fixed_1]
+fig = plt.stackplot(xx, yy, colors = 'w', edgecolor = 'black', labels = ['Delay cost', 'Backup cost', 'Battery cost'])
+hatches = ['o', '/', 'x']
+for s, h in zip(fig, hatches):
+    s.set_hatch(h)
+plt.title('Fixed 0.4kW')
 plt.legend()
 plt.grid()
 my_file = 'p='+str(x)+'/fixed_0.4kW_area='+str(x)+'_.png'
@@ -437,7 +461,13 @@ plt.show()
 #fixed 1kW area chart
 plt.xlabel("Time Slot")
 plt.ylabel("Average Costs")
-plt.stackplot(range(t_range), avg_rewards_fixed_2, avg_rewards_time_list_fixed_2, avg_rewards_bak_list_fixed_2, avg_rewards_bat_list_fixed_2, avg_rewards_energy_list_fixed_2, labels = ['Avg cost', 'Delay cost', 'Backup cost', 'Battery cost', 'Energy cost'])
+xx = range(t_range)
+yy = [avg_rewards_time_list_fixed_2, avg_rewards_bak_list_fixed_2, avg_rewards_bat_list_fixed_2]
+fig = plt.stackplot(xx, yy, colors = 'w', edgecolor = 'black', labels = ['Delay cost', 'Backup cost', 'Battery cost'])
+hatches = ['o', '/', 'x']
+for s, h in zip(fig, hatches):
+    s.set_hatch(h)
+plt.title('Fixed 1kW')
 plt.legend()
 plt.grid()
 my_file = 'p='+str(x)+'/fixed_1kW_area='+str(x)+'_.png'
@@ -446,7 +476,13 @@ plt.show()
 #dqn area chart
 plt.xlabel("Time Slot")
 plt.ylabel("Average Costs")
-plt.stackplot(range(t_range), avg_rewards_dqn, avg_rewards_time_list_dqn, avg_rewards_bak_list_dqn, avg_rewards_bat_list_dqn, avg_rewards_energy_list_dqn, labels = ['Avg cost', 'Delay cost', 'Backup cost', 'Battery cost', 'Energy cost'])
+xx = range(t_range)
+yy = [avg_rewards_time_list_dqn, avg_rewards_bak_list_dqn, avg_rewards_bat_list_dqn]
+fig = plt.stackplot(xx, yy, colors = 'w', edgecolor = 'black', labels = ['Delay cost', 'Backup cost', 'Battery cost'])
+hatches = ['o', '/', 'x']
+for s, h in zip(fig, hatches):
+    s.set_hatch(h)
+plt.title('DQN')
 plt.legend()
 plt.grid()
 my_file = 'p='+str(x)+'/dqn_area='+str(x)+'_.png'
