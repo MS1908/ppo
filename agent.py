@@ -398,6 +398,52 @@ my_file = 'p='+str(x)+'/avg_energy_p='+str(x)+'_.png'
 plt.savefig(os.path.join(my_path, my_file))
 plt.show()
 
+#total cost - area chart
+plt.xlabel("Time Slot")
+plt.ylabel("Time Average Cost")
+plt.stackplot(range(t_range), avg_rewards_ppo, avg_rewards_random, avg_rewards_myopic, avg_rewards_fixed_1, avg_rewards_fixed_2, avg_rewards_dqn, labels = ['ppo', 'random', 'myopic', 'fixed 0.4kW', 'fixed 1kW', 'q learning'])
+plt.legend()
+plt.grid()
+my_file = 'p='+str(x)+'/avg_total_p_area='+str(x)+'_.png'
+plt.savefig(os.path.join(my_path, my_file))
+plt.show()
+#time cost - area chart
+plt.xlabel("Time Slot")
+plt.ylabel("Time Average Delay Cost")
+plt.stackplot(range(t_range), avg_rewards_time_list_ppo, avg_rewards_time_list_random, avg_rewards_time_list_myopic, avg_rewards_time_list_fixed_1, avg_rewards_time_list_fixed_2, avg_rewards_time_list_dqn, labels = ['ppo', 'random', 'myopic', 'fixed 0.4kW', 'fixed 1kW', 'q learning'])
+plt.legend()
+plt.grid()
+my_file = 'p='+str(x)+'/avg_time_p_area='+str(x)+'_.png'
+plt.savefig(os.path.join(my_path, my_file))
+plt.show()
+#bak-up cost - area chart
+plt.xlabel("Time Slot")
+plt.ylabel("Time Average Backup Cost")
+plt.stackplot(range(t_range), avg_rewards_bak_list_ppo, avg_rewards_bak_list_random, avg_rewards_bak_list_myopic, avg_rewards_bak_list_fixed_1, avg_rewards_bak_list_fixed_2, avg_rewards_bak_list_dqn, labels = ['ppo', 'random', 'myopic', 'fixed 0.4kW', 'fixed 1kW', 'q learning'])
+plt.legend()
+plt.grid()
+my_file = 'p='+str(x)+'/avg_backup_p_area='+str(x)+'_.png'
+plt.savefig(os.path.join(my_path, my_file))
+plt.show()
+#battery cost - area chart
+plt.xlabel("Time Slot")
+plt.ylabel("Time Average Battery Cost")
+plt.stackplot(range(t_range), avg_rewards_bat_list_ppo, avg_rewards_bat_list_random, avg_rewards_bat_list_myopic, avg_rewards_bat_list_fixed_1, avg_rewards_bat_list_fixed_2, avg_rewards_bat_list_dqn, labels = ['ppo', 'random', 'myopic', 'fixed 0.4kW', 'fixed 1kW', 'q learning'])
+plt.legend()
+plt.grid()
+my_file = 'p='+str(x)+'/avg_battery_p_area='+str(x)+'_.png'
+plt.savefig(os.path.join(my_path, my_file))
+plt.show()
+#energy cost - area chart
+plt.xlabel("Time Slot")
+plt.ylabel("Time Average Battery Cost")
+plt.stackplot(range(t_range), avg_rewards_energy_list_ppo, avg_rewards_energy_list_random, avg_rewards_energy_list_myopic, avg_rewards_energy_list_fixed_1, avg_rewards_energy_list_fixed_2, avg_rewards_energy_list_dqn, labels = ['ppo', 'random', 'myopic', 'fixed 0.4kW', 'fixed 1kW', 'q learning'])
+plt.legend()
+plt.grid()
+my_file = 'p='+str(x)+'/avg_enegry_p_area='+str(x)+'_.png'
+plt.savefig(os.path.join(my_path, my_file))
+plt.show()
+
 # df1 = pd.DataFrame(ppo_data, columns=['delay cost', 'back-up power cost', 'battery cost'])
 # df1.plot.area()
 # # plt.plot(range(t_range), avg_rewards_ppo)
