@@ -19,44 +19,6 @@ from stable_baselines.common.vec_env import DummyVecEnv
 from stable_baselines.common import set_global_seeds
 from stable_baselines import PPO2
 start_time = time.time()
-class DQNSolver:
-
-    def __init__(self, observation_space, action_space):
-        self.exploration_rate = 1.0
-
-        self.observation_space = observation_space
-        self.action_space = action_space
-        self.memory = deque(maxlen=1000000)
-
-        self.model = Sequential()
-        self.model.add(Dense(24, input_shape=(observation_space,), activation="relu"))
-        self.model.add(Dense(24, activation="relu"))
-        self.model.add(Dense(self.action_space, activation="linear"))
-        self.model.compile(loss="mse", optimizer=Adam(lr=0.001))
-
-    def remember(self, state, action, reward, next_state, terminal):
-        self.memory.append((state, action, reward, next_state, terminal))
-
-    def act(self, state):
-        if np.random.rand() < self.exploration_rate:
-            return random.randrange(self.action_space)
-        q_values = self.model.predict(state)
-        return np.argmin(q_values[0])
-
-    def replay(self):
-        if len(self.memory) < 20:
-            return
-        batch = random.sample(self.memory, 20)
-        for state, action, reward, next_state, terminal in batch:
-            q_upd = reward
-            if not terminal:
-                q_upd = (reward + 0.95 * np.amin(self.model.predict(next_state)[0]))
-            q_val = self.model.predict(state)
-            q_val[0][action] = q_upd
-            self.model.fit(state, q_val, verbose=0)
-        self.exploration_rate *= 0.995
-        self.exploration_rate = max(0.01, self.exploration_rate)
-
 
 def set_seed(rand_seed):
     set_global_seeds(100)
@@ -148,7 +110,13 @@ dqn_data = []
 train_time_slots = 20000
 t_range = 2000
 
-
+'''
+    Myopic algorithm: The calculation to get the next action is implemented in the environment file.
+    * Myopic is simply a greedy approach. We will use the optimization of scipy (namely minimize_scalar)
+      to get the minimum value of the power function which corresponds to current state of the environment,
+      and we take that action.
+    * Myopic just optimize for a single timeslot.
+'''
 
 #myopic
 set_seed(rand_seed)
@@ -169,6 +137,10 @@ for i in range(t_range):
     myopic_data.append([avg_rewards_time_list_myopic[-1], avg_rewards_bak_list_myopic[-1], avg_rewards_bat_list_myopic[-1]])
     if dones: env.reset()
 
+'''
+    Fixed the energy at 0.4kW
+'''
+
 #fixed_0.4kW
 set_seed(rand_seed)
 obs = env.reset()
@@ -187,6 +159,10 @@ for i in range(t_range):
     avg_rewards_energy_list_fixed_1.append(avg_rewards_bak_list_fixed_1[-1]+avg_rewards_bat_list_fixed_1[-1])
     fixed_1_data.append([avg_rewards_time_list_fixed_1[-1], avg_rewards_bak_list_fixed_1[-1], avg_rewards_bat_list_fixed_1[-1]])
     if dones: env.reset()
+
+'''
+    Fixed the energy at 1kW
+'''
 
 #fixed_1kW
 set_seed(rand_seed)
@@ -207,6 +183,10 @@ for i in range(t_range):
     fixed_2_data.append([avg_rewards_time_list_fixed_2[-1], avg_rewards_bak_list_fixed_2[-1], avg_rewards_bat_list_fixed_2[-1]])
     if dones: env.reset()
 
+'''
+    Pick a random energy value.
+'''
+
 #random
 set_seed(rand_seed)
 obs = env.reset()
@@ -225,6 +205,12 @@ for i in range(t_range):
     avg_rewards_energy_list_random.append(avg_rewards_bak_list_random[-1]+avg_rewards_bat_list_random[-1])
     random_data.append([avg_rewards_time_list_random[-1], avg_rewards_bak_list_random[-1], avg_rewards_bat_list_random[-1]])
     if dones: env.reset()
+
+'''
+    The algorithm we used in the paper, PPO. 
+    * Here we simply invoke the PPO module that is already implemented.
+    * The informations about this module can be found here: https://stable-baselines.readthedocs.io/en/master/modules/ppo2.html
+'''
 
 #ppo
 set_seed(rand_seed)
@@ -246,7 +232,53 @@ for i in range(t_range):
     if dones: env.reset()
     # env.render()
 
+'''
+    Here we implemented a DQN algorithm to compare with PPO.
+    * We use a single hidden layer neural network.
+    * The implementation is a stub, tbh.
+    
+'''
+
 #dqn
+
+class DQNSolver:
+
+    def __init__(self, observation_space, action_space):
+        self.exploration_rate = 1.0
+
+        self.observation_space = observation_space
+        self.action_space = action_space
+        self.memory = deque(maxlen=1000000)
+        # the neural network
+        self.model = Sequential()
+        self.model.add(Dense(24, input_shape=(observation_space,), activation="relu"))
+        self.model.add(Dense(24, activation="relu"))
+        self.model.add(Dense(self.action_space, activation="linear"))
+        self.model.compile(loss="mse", optimizer=Adam(lr=0.001))
+    # remember, for exploitation
+    def remember(self, state, action, reward, next_state, terminal):
+        self.memory.append((state, action, reward, next_state, terminal))
+
+    def act(self, state):
+        if np.random.rand() < self.exploration_rate:
+            return random.randrange(self.action_space)
+        q_values = self.model.predict(state)
+        return np.argmin(q_values[0])
+
+    def replay(self):
+        if len(self.memory) < 20:
+            return
+        batch = random.sample(self.memory, 20)
+        for state, action, reward, next_state, terminal in batch:
+            q_upd = reward
+            if not terminal:
+                q_upd = (reward + 0.95 * np.amin(self.model.predict(next_state)[0]))
+            q_val = self.model.predict(state)
+            q_val[0][action] = q_upd
+            self.model.fit(state, q_val, verbose=0)
+        self.exploration_rate *= 0.995 # exploration rate
+        self.exploration_rate = max(0.01, self.exploration_rate)
+
 set_seed(rand_seed)
 obs = env.reset()
 def agent():
@@ -269,7 +301,7 @@ def agent():
             step += 1
             accumulated_step += 1
             # print('\tstate: ', state)
-            if step >= 96:
+            if step >= 96: # Termination of a single episode
                 done = True
             solver.remember(state, action, reward, next_state, done)
             state = next_state
@@ -277,7 +309,7 @@ def agent():
                 # episode += 1
                 break
             solver.replay()
-            if accumulated_step == train_time_slots:
+            if accumulated_step == train_time_slots: # Termination of the entire training process.
                 terminal = True
                 break
         if terminal:
