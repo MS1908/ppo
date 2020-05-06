@@ -7,40 +7,9 @@ from scipy.optimize import minimize_scalar
 
 class OffloadAutoscaleEnv(gym.Env):
     # metadata = {'render.modes': ['human']}
+
     #define state space, action space, and other environment parameters
     def __init__(self, p_coeff):
-        #set the value range for state space parameters (λ, b, h, e)
-        ##λ
-        self.lamda_high = 100  # units/second
-        self.lamda_low = 10
-        ##b
-        self.b_high = self.batery_capacity / self.timeslot  # W (b_high = battery capacity B in the paper,but here it can be changed from energy to power (Wh-->W) as stated in III.C.Power Model)
-        self.b_low = 0
-        ##h
-        self.h_high = 0.06  # s/unit
-        self.h_low = 0.02
-        ##e
-        self.e_low = 0
-        self.e_high = 2
-        self.time = 0 #between 0 & 23.75, the time in the day (in unit: hour), used to build transition funtion for e
-
-        #define state space & action space:
-        r_high = np.array([
-            self.lamda_high,
-            self.b_high,
-            self.h_high,
-            self.e_high])
-        r_low = np.array([
-            self.lamda_low,
-            self.b_low,
-            self.h_low,
-            self.e_low])
-        self.observation_space = spaces.Box(low=r_low, high=r_high)
-        self.action_space = spaces.Box(low=0.0, high=1.0, shape=(1,), dtype=np.float32)
-        #note, the action space is normalized to the [0,1] range, will need to be mapped back to the correct action space later via the de_state variable in the cal() function
-
-        #initalize state
-        self.state = [0, 0, 0, 0]
 
         #environment parameters from III.SYSTEM MODEL
         ##duration of each time-slot
@@ -75,7 +44,42 @@ class OffloadAutoscaleEnv(gym.Env):
         self.server_power_consumption = 150
         ##D.Battery model
         ###batery capacity B
-        self.batery_capacity = 2000  # Wh
+        self.batery_capacity = 2000  # Wh    
+        
+        #set the value range for state space parameters (λ, b, h, e)
+        ##λ
+        self.lamda_high = 100  # units/second
+        self.lamda_low = 10
+        ##b
+        self.b_high = self.batery_capacity / self.timeslot  # W (b_high = battery capacity B in the paper,but here it can be changed from energy to power (Wh-->W) as stated in III.C.Power Model)
+        self.b_low = 0
+        ##h
+        self.h_high = 0.06  # s/unit
+        self.h_low = 0.02
+        ##e
+        self.e_low = 0
+        self.e_high = 2
+        self.time = 0 #between 0 & 23.75, the time in the day (in unit: hour), used to build transition funtion for e
+
+        #define state space & action space:
+        r_high = np.array([
+            self.lamda_high,
+            self.b_high,
+            self.h_high,
+            self.e_high])
+        r_low = np.array([
+            self.lamda_low,
+            self.b_low,
+            self.h_low,
+            self.e_low])
+        self.observation_space = spaces.Box(low=r_low, high=r_high)
+        self.action_space = spaces.Box(low=0.0, high=1.0, shape=(1,), dtype=np.float32)
+        #note, the action space is normalized to the [0,1] range, will need to be mapped back to the correct action space later via the de_state variable in the cal() function
+
+        #initalize state
+        self.state = [0, 0, 0, 0]
+
+        
 
         ###cost coefficient of backup power supply ϕ
         self.back_up_cost_coef = 0.15
