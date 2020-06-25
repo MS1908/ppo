@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import os
 
-my_res_path = os.path.abspath('res/1kts/')
+my_res_path = os.path.abspath('wcci/')
 my_xls_path = os.path.abspath('res/')
 
 val = 0.5 # value of p
@@ -194,6 +194,7 @@ fig = plt.stackplot(xx, plot_list, edgecolor = 'black', labels = ['Delay cost', 
 hatches = ['...', '+++++', '///']
 for s, h in zip(fig, hatches):
     s.set_hatch(h)
+plt.ylim(0, 12)
 plt.title('PPO')
 plt.xlabel("Time Slot")
 plt.ylabel("Time Average Cost")
@@ -260,6 +261,7 @@ plt.title('Myopic')
 plt.xlabel("Time Slot")
 plt.ylabel("Time Average Cost")
 plt.legend(loc='lower center', bbox_to_anchor=(0.5, 0.), ncol=3, fancybox=True, shadow=True)
+plt.ylim(0, 12)
 # plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05), ncol=3, fancybox=True, shadow=True)
 # plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.grid()
@@ -349,6 +351,7 @@ fig = plt.stackplot(xx, plot_list, edgecolor = 'black', labels = ['Delay cost', 
 hatches = ['...', '+++++', '///']
 for s, h in zip(fig, hatches):
     s.set_hatch(h)
+plt.ylim(0, 12)
 plt.title('DQN')
 plt.xlabel("Time Slot")
 plt.ylabel("Time Average Cost")
